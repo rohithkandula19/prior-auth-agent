@@ -4,47 +4,38 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import type { EvalSummary } from "@/lib/types";
-import { Badge } from "@/components/ui/Badge";
+import { CalibrationCurve } from "@/components/CalibrationCurve";
 
-function ReliabilityChart({
-  rows,
-}: {
-  rows: NonNullable<EvalSummary["reliability"]>;
-}) {
-  const max = 1.0;
-  return (
-    <div className="space-y-2">
-      {rows.length === 0 ? (
-        <div className="text-xs text-slate-500">No reliability data.</div>
-      ) : (
-        rows.map((r) => (
-          <div key={r.bin} className="grid grid-cols-12 items-center gap-2 text-xs">
-            <span className="col-span-2 font-mono text-slate-500">{r.bin}</span>
-            <div className="col-span-7 h-4 rounded bg-slate-100">
-              <div
-                className="h-full rounded bg-emerald-500/70"
-                style={{ width: `${(r.accuracy / max) * 100}%` }}
-                title={`accuracy ${r.accuracy}`}
-              />
-              <div
-                className="-mt-4 h-4 rounded border-r-2 border-blue-500"
-                style={{ width: `${(r.avg_confidence / max) * 100}%` }}
-                title={`avg confidence ${r.avg_confidence}`}
-              />
-            </div>
-            <span className="col-span-1 font-mono text-right text-slate-500">{r.count}</span>
-            <span className="col-span-2 font-mono text-right text-slate-500">
-              {r.accuracy.toFixed(2)} / {r.avg_confidence.toFixed(2)}
-            </span>
-          </div>
-        ))
-      )}
-      <div className="flex justify-end gap-3 pt-1 text-[10px] text-slate-500">
-        <span>green = accuracy</span>
-        <span>blue line = avg confidence</span>
-      </div>
-    </div>
-  );
+const FAILURE_LABEL: Record<string, string> = {
+  hallucinated_criterion: "Hallucinated criterion",
+  missed_criterion: "Missed criterion",
+  wrong_span_citation: "Wrong span citation",
+  evidence_misread: "Evidence misread",
+  logical_error: "Logical error",
+  calibration_failure: "Calibration failure",
+  latency_outlier: "Latency outlier",
+  pipeline_error: "Pipeline error",
+};
+
+const DECISION_LABEL: Record<string, string> = {
+  approved: "Approved",
+  denied: "Denied",
+  needs_more_info: "Needs more info",
+};
+
+function failureRows(
+  fm: EvalSummary["failure_modes"]
+): { key: string; count: number; pct: number }[] {
+  if (!fm) return [];
+  const entries = Object.entries(fm);
+  const total = entries.reduce((s, [, v]) => s + (typeof v === "number" ? v : v.count), 0) || 1;
+  return entries
+    .map(([k, v]) => {
+      const count = typeof v === "number" ? v : v.count;
+      const pct = typeof v === "number" ? count / total : v.pct;
+      return { key: k, count, pct };
+    })
+    .sort((a, b) => b.count - a.count);
 }
 
 export function EvalDashboard({ initial }: { initial: EvalSummary }) {
@@ -67,130 +58,141 @@ export function EvalDashboard({ initial }: { initial: EvalSummary }) {
     }
   }
 
+  const cases = summary.n;
+  const agreement = summary.agreement ?? 0;
+  const ece = summary.ece ?? 0;
+  const p95 = summary.latency_ms?.p95 ?? 0;
+  const p50 = summary.latency_ms?.p50 ?? 0;
+  const cost = summary.avg_cost_usd ?? 0;
+  const fm = failureRows(summary.failure_modes);
+  const fmMax = Math.max(1, ...fm.map((r) => r.count));
+  const decisions = summary.by_decision ?? {};
+  const decisionEntries = Object.entries(decisions);
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Eval dashboard</h1>
-          <p className="text-sm text-slate-600">
-            Latest agreement, calibration, latency, and failure modes from the
-            stub gold set.
-          </p>
+    <div className="space-y-10">
+      <div className="flex items-start justify-between gap-6">
+        <div className="space-y-2">
+          <p className="eyebrow">Eval run {summary.run_version ?? "v1"}</p>
+          <h1 className="text-4xl font-semibold tracking-tight">
+            {cases} cases against gold standard
+          </h1>
         </div>
         <button
           onClick={run}
           disabled={running}
-          className="rounded-md bg-ink px-3 py-2 text-sm font-medium text-white disabled:opacity-40"
+          className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
         >
           {running ? "Running..." : "Run eval"}
         </button>
       </div>
       {err ? <p className="text-xs text-red-600">{err}</p> : null}
 
-      <div className="grid gap-3 md:grid-cols-4">
-        <Stat label="Cases" value={String(summary.n)} />
-        <Stat label="Agreement" value={(summary.agreement ?? 0).toFixed(3)} />
-        <Stat label="ECE" value={(summary.ece ?? 0).toFixed(3)} />
-        <Stat
-          label="Avg cost"
-          value={`$${(summary.avg_cost_usd ?? 0).toFixed(4)}`}
-        />
+      <div className="grid gap-4 md:grid-cols-4">
+        <Tile label="Agreement" value={`${Math.round(agreement * 100)}%`} hint={agreement >= 0.8 ? "Above target" : "Below target"} hintTone={agreement >= 0.8 ? "good" : "warn"} />
+        <Tile label="ECE" value={ece.toFixed(2)} hint={ece <= 0.1 ? "Well calibrated" : "Drift detected"} hintTone={ece <= 0.1 ? "good" : "warn"} />
+        <Tile label="Latency p95" value={`${formatMs(p95)}`} hint={`p50 ${formatMs(p50)}`} />
+        <Tile label="Cost" value={`$${cost.toFixed(2)}`} hint="per determination" />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-line bg-white p-5">
-          <h3 className="mb-3 text-sm font-semibold">Reliability diagram</h3>
-          <ReliabilityChart rows={summary.reliability ?? []} />
-        </div>
-        <div className="rounded-lg border border-line bg-white p-5">
-          <h3 className="mb-3 text-sm font-semibold">Latency (ms)</h3>
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <Stat
-              label="p50"
-              value={String(summary.latency_ms?.p50 ?? 0)}
-              compact
-            />
-            <Stat
-              label="p95"
-              value={String(summary.latency_ms?.p95 ?? 0)}
-              compact
-            />
-            <Stat
-              label="p99"
-              value={String(summary.latency_ms?.p99 ?? 0)}
-              compact
-            />
-          </div>
-        </div>
+      <div className="grid gap-5 md:grid-cols-2">
+        <section className="rounded-xl border border-line/70 bg-white p-6">
+          <p className="eyebrow mb-4">Calibration curve</p>
+          {summary.reliability && summary.reliability.length > 0 ? (
+            <CalibrationCurve reliability={summary.reliability} />
+          ) : (
+            <p className="text-sm text-slate-500">No data yet.</p>
+          )}
+        </section>
+
+        <section className="rounded-xl border border-line/70 bg-white p-6">
+          <p className="eyebrow mb-4">Decision class</p>
+          {decisionEntries.length === 0 ? (
+            <p className="text-sm text-slate-500">No data yet.</p>
+          ) : (
+            <ul className="space-y-5">
+              {decisionEntries.map(([d, v]) => (
+                <li key={d}>
+                  <div className="mb-1 flex items-baseline justify-between">
+                    <span className="text-sm">{DECISION_LABEL[d] ?? d}</span>
+                    <span className="font-mono text-xs text-slate-500">
+                      {v.correct} / {v.n}
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-slate-100">
+                    <div
+                      className="h-full rounded-full bg-ink"
+                      style={{ width: `${(v.correct / Math.max(v.n, 1)) * 100}%` }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-lg border border-line bg-white p-5">
-          <h3 className="mb-3 text-sm font-semibold">By decision</h3>
-          {summary.by_decision && Object.keys(summary.by_decision).length > 0 ? (
-            <ul className="space-y-2 text-sm">
-              {Object.entries(summary.by_decision).map(([d, v]) => (
-                <li key={d} className="flex items-center justify-between">
-                  <Badge
-                    tone={
-                      d === "approved"
-                        ? "approved"
-                        : d === "denied"
-                        ? "denied"
-                        : "pending"
-                    }
-                  >
-                    {d}
-                  </Badge>
-                  <span className="font-mono text-xs text-slate-600">
-                    {v.n} cases | accuracy {v.accuracy.toFixed(3)}
+      <section className="rounded-xl border border-line/70 bg-white p-6">
+        <p className="eyebrow mb-4">Failure modes</p>
+        {fm.length === 0 ? (
+          <p className="text-sm text-slate-500">No failures detected.</p>
+        ) : (
+          <ul className="divide-y divide-line/70">
+            {fm.map((row) => (
+              <li
+                key={row.key}
+                className="flex items-center justify-between gap-6 py-3"
+              >
+                <span className="text-sm font-medium">
+                  {FAILURE_LABEL[row.key] ?? row.key.replace(/_/g, " ")}
+                </span>
+                <div className="flex items-center gap-4">
+                  <div className="hidden h-1 w-40 rounded-full bg-slate-100 sm:block">
+                    <div
+                      className="h-full rounded-full bg-ink/70"
+                      style={{ width: `${(row.count / fmMax) * 100}%` }}
+                    />
+                  </div>
+                  <span className="font-mono text-xs text-slate-500">
+                    {row.count} {row.count === 1 ? "case" : "cases"} · {Math.round(row.pct * 100)}%
                   </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-slate-500">No data yet.</p>
-          )}
-        </div>
-        <div className="rounded-lg border border-line bg-white p-5">
-          <h3 className="mb-3 text-sm font-semibold">Failure modes</h3>
-          {summary.failure_modes && Object.keys(summary.failure_modes).length > 0 ? (
-            <ul className="space-y-1 text-sm">
-              {Object.entries(summary.failure_modes).map(([k, v]) => (
-                <li key={k} className="flex items-center justify-between">
-                  <span>{k.replace(/_/g, " ")}</span>
-                  <span className="font-mono text-xs text-slate-600">{v}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-xs text-slate-500">No failures detected.</p>
-          )}
-        </div>
-      </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
 
-function Stat({
+function Tile({
   label,
   value,
-  compact = false,
+  hint,
+  hintTone,
 }: {
   label: string;
   value: string;
-  compact?: boolean;
+  hint?: string;
+  hintTone?: "good" | "warn";
 }) {
+  const hintCls =
+    hintTone === "good"
+      ? "text-emerald-600"
+      : hintTone === "warn"
+      ? "text-amber-600"
+      : "text-slate-500";
   return (
-    <div
-      className={`rounded-lg border border-line bg-white ${
-        compact ? "px-3 py-2" : "p-5"
-      }`}
-    >
-      <div className="text-xs uppercase tracking-wider text-slate-500">{label}</div>
-      <div className={`mt-1 font-semibold ${compact ? "text-lg" : "text-2xl"}`}>
-        {value}
-      </div>
+    <div className="rounded-xl border border-line/70 bg-white p-5">
+      <p className="eyebrow">{label}</p>
+      <p className="mt-2 text-3xl font-semibold tracking-tight">{value}</p>
+      {hint ? <p className={`mt-1 text-xs ${hintCls}`}>{hint}</p> : null}
     </div>
   );
+}
+
+function formatMs(ms: number): string {
+  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${Math.round(ms)}ms`;
 }

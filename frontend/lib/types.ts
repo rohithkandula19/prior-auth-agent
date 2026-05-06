@@ -81,12 +81,13 @@ export interface Determination {
 }
 
 export interface EvalSummary {
+  run_version?: string;
   n: number;
   agreement: number;
   ece?: number;
   reliability?: { bin: string; count: number; accuracy: number; avg_confidence: number }[];
-  by_decision?: Record<string, { n: number; accuracy: number }>;
+  by_decision?: Record<string, { n: number; correct: number; accuracy: number }>;
   latency_ms?: { p50: number; p95: number; p99: number };
   avg_cost_usd?: number;
-  failure_modes?: Record<string, number>;
+  failure_modes?: Record<string, { count: number; pct: number }> | Record<string, number>;
 }

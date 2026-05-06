@@ -78,11 +78,19 @@ def summarise(records: list[dict]) -> dict[str, Any]:
     decision_breakdown = {
         d: {
             "n": by_decision[d],
+            "correct": correct_by_decision[d],
             "accuracy": round(correct_by_decision[d] / by_decision[d], 3),
         }
         for d in by_decision
     }
+    fm_counts = Counter(fm for r in records for fm in r.get("failure_modes", []))
+    fm_total = sum(fm_counts.values()) or 1
+    failure_modes = {
+        k: {"count": v, "pct": round(v / fm_total, 3)}
+        for k, v in fm_counts.most_common()
+    }
     return {
+        "run_version": "v1",
         "n": n,
         "agreement": round(agreement, 3),
         "ece": expected_calibration_error(records),
@@ -90,7 +98,7 @@ def summarise(records: list[dict]) -> dict[str, Any]:
         "by_decision": decision_breakdown,
         "latency_ms": latency_percentiles(records),
         "avg_cost_usd": round(mean(r["cost_usd"] for r in records), 4),
-        "failure_modes": dict(Counter(fm for r in records for fm in r.get("failure_modes", []))),
+        "failure_modes": failure_modes,
     }
 
 

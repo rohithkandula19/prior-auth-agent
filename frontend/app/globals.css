@@ -12,15 +12,38 @@ body {
   color: theme("colors.ink");
 }
 
+/* Editorial typography defaults */
+h1 {
+  letter-spacing: -0.025em;
+}
+h2,
+h3 {
+  letter-spacing: -0.015em;
+}
+
+/* Citation highlights matching the mockups: warm yellow for policy, mint
+   green for chart. Pad a hair so the highlight reads as a lozenge. */
 .cite-policy {
-  background: rgba(59, 130, 246, 0.18);
-  border-radius: 2px;
+  background: #fde9b8;
+  padding: 1px 4px;
+  margin: 0 1px;
+  border-radius: 4px;
 }
 .cite-chart {
-  background: rgba(16, 185, 129, 0.18);
-  border-radius: 2px;
+  background: #c8efd2;
+  padding: 1px 4px;
+  margin: 0 1px;
+  border-radius: 4px;
 }
 .cite-active {
-  outline: 2px solid #1d4ed8;
+  outline: 2px solid #1f2937;
   outline-offset: 1px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 500;
 }
