@@ -10,6 +10,7 @@ from app.api import (
     routes_policies,
 )
 from app.core.logging import configure_logging, get_logger
+from app.storage.db import init_db
 
 log = get_logger(__name__)
 
@@ -17,6 +18,7 @@ log = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     configure_logging()
+    init_db()
     log.info("startup")
     yield
     log.info("shutdown")

@@ -21,7 +21,8 @@ class Settings(BaseSettings):
     openrouter_referer: str = "https://github.com/rohithkandula19/prior-auth-agent"
     openrouter_app_title: str = "Prior Authorization Agent"
 
-    database_url: str = "postgresql://localhost/priorauth"
+    # SQLite by default (no external dependency); set to postgresql://... for Postgres.
+    database_url: str = "sqlite:///./data/priorauth.db"
     faiss_index_dir: Path = Path("./data/faiss_indexes")
     synthea_output_dir: Path = Path("./data/patients/synthea")
     gold_set_path: Path = Path("./data/gold_set/v1.jsonl")
