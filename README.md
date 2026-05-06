@@ -97,6 +97,30 @@ latency p50/p95/p99, average cost, and a 7-mode failure taxonomy
 misread, logical error, calibration failure, latency outlier). See
 [docs/eval_methodology.md](docs/eval_methodology.md).
 
+## Ingesting a real payer policy
+
+Public payer policies are linked off each plan's provider portal. Once you
+have the PDF (URL or local file), use the helper:
+
+```bash
+# from a public URL
+python scripts/ingest_real_policy.py \
+    --url https://www.uhcprovider.com/.../mri-lumbar-spine.pdf \
+    --policy-id uhc_mri_lumbar \
+    --payer UnitedHealthcare \
+    --procedure-code 72148 \
+    --procedure-name "MRI Lumbar Spine"
+
+# or from a local file
+python scripts/ingest_real_policy.py \
+    --file ~/Downloads/UHC_MRI_Lumbar_2025.pdf \
+    --policy-id uhc_mri_lumbar --payer UnitedHealthcare \
+    --procedure-code 72148 --procedure-name "MRI Lumbar Spine"
+```
+
+It calls `POST /policies/ingest` (multipart) so the result lands in the
+same SQLite/Postgres the UI reads from.
+
 ## Layout
 
 ```
