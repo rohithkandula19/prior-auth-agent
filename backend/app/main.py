@@ -1,0 +1,47 @@
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.api import (
+    routes_determinations,
+    routes_eval,
+    routes_patients,
+    routes_policies,
+)
+from app.core.logging import configure_logging, get_logger
+
+log = get_logger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    configure_logging()
+    log.info("startup")
+    yield
+    log.info("shutdown")
+
+
+app = FastAPI(
+    title="Prior Authorization Agent",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(routes_policies.router)
+app.include_router(routes_patients.router)
+app.include_router(routes_determinations.router)
+app.include_router(routes_eval.router)
+
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    return {"status": "ok"}
