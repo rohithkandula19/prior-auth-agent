@@ -17,7 +17,8 @@ log = get_logger(__name__)
 class EmbeddingClient:
     def __init__(self, model: str | None = None, api_key: str | None = None) -> None:
         self.model = model or settings.anthropic_embedding_model
-        self._client = voyageai.Client(api_key=api_key or settings.voyage_api_key or None)
+        resolved_key = api_key or settings.voyage_api_key or None
+        self._client = voyageai.Client(api_key=resolved_key)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8))
     def embed(self, texts: Sequence[str], input_type: str = "document") -> np.ndarray:

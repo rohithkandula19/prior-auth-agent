@@ -1,0 +1,60 @@
+UnitedHealthcare Commercial Medical Policy
+Magnetic Resonance Imaging (MRI) of the Lumbar Spine
+CPT Code: 72148, 72149, 72158
+Effective Date: January 1, 2025
+
+COVERAGE RATIONALE
+
+MRI of the lumbar spine is medically necessary when ALL of the following criteria are met:
+
+1. The member has had a documented neurologic examination performed by the
+   ordering physician within the prior 30 days.
+
+2. The member has completed at least six (6) weeks of physician-directed
+   conservative therapy, including any combination of physical therapy,
+   chiropractic care, anti-inflammatory medication, or activity modification,
+   without clinically meaningful improvement.
+
+   Exceptions: The conservative therapy requirement is waived when any of the
+   following is documented:
+   a. Progressive neurologic deficit (motor weakness, sensory loss, or reflex
+      change) that has worsened over the most recent two-week period.
+   b. Suspected cauda equina syndrome, including new-onset bowel or bladder
+      dysfunction or saddle anesthesia.
+   c. Known or suspected spinal infection, malignancy, or vertebral fracture
+      based on imaging or clinical findings.
+
+3. Plain radiographs of the lumbar spine have been performed and reviewed,
+   unless an exception under criterion 2 applies.
+
+CONTRAINDICATIONS
+
+MRI of the lumbar spine is NOT covered when any of the following applies:
+
+A. The member has a non-MRI-compatible cardiac pacemaker, implanted
+   defibrillator, cochlear implant, or other ferromagnetic implant for which
+   MRI is contraindicated by the device manufacturer.
+
+B. The request is for screening of asymptomatic members.
+
+C. The same study has been performed within the prior six (6) months and there
+   has been no documented change in clinical status.
+
+DOCUMENTATION REQUIREMENTS
+
+The following documentation must be submitted with the prior authorization
+request:
+
+i. Office notes documenting the neurologic examination and current symptoms,
+   including duration and severity.
+
+ii. Records of conservative therapy, including dates of service, type of
+    therapy, and clinical response.
+
+iii. Reports of any prior imaging of the lumbar spine performed within the
+     past twelve (12) months.
+
+iv. The clinical question that the requested MRI is intended to answer.
+
+This policy is synthetic test data and does not represent an actual published
+United Healthcare policy. Use the real PDF for production runs.

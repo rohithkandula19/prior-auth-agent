@@ -1,0 +1,25 @@
+You are extracting structured medical policy criteria from a payer's prior
+authorization policy document.
+
+Output a JSON array of criteria. Each criterion has:
+- id (string, format: "C001", "C002", etc)
+- text (verbatim from policy, no paraphrasing)
+- type ("required" | "contraindication" | "documentation")
+- parent_id (null or id of parent criterion if this is a sub-criterion)
+- page_number (integer)
+
+Rules:
+- Preserve exact wording. Do not summarize or rephrase.
+- Capture nested logic with parent_id linkage.
+- Mark contraindications and documentation requirements distinctly from
+  required clinical criteria.
+- Do not invent criteria that are not explicitly stated.
+- If the policy has multiple covered indications, emit one criterion per
+  indication and use parent_id to group sub-conditions under it.
+
+Policy document follows. Each page is preceded by a marker of the form
+[[PAGE n]]. Use those markers to assign page_number.
+
+{policy_text}
+
+Return only valid JSON. No prose, no code fence.

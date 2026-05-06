@@ -1,0 +1,155 @@
+{
+  "id": "uhc_mri_lumbar_synthetic",
+  "payer": "UnitedHealthcare",
+  "procedure_code": "72148",
+  "procedure_name": "MRI Lumbar Spine",
+  "effective_date": "2025-01-01",
+  "source_url": "synthetic",
+  "raw_text": "[[PAGE 1]]\nUnitedHealthcare Commercial Medical Policy\nMagnetic Resonance Imaging (MRI) of the Lumbar Spine\nCPT Code: 72148, 72149, 72158\nEffective Date: January 1, 2025\n\nCOVERAGE RATIONALE\n\nMRI of the lumbar spine is medically necessary when ALL of the following criteria are met:\n\n1. The member has had a documented neurologic examination performed by the\n   ordering physician within the prior 30 days.\n\n2. The member has completed at least six (6) weeks of physician-directed\n   conservative therapy, including any combination of physical therapy,\n   chiropractic care, anti-inflammatory medication, or activity modification,\n   without clinically meaningful improvement.\n\n   Exceptions: The conservative therapy requirement is waived when any of the\n   following is documented:\n   a. Progressive neurologic deficit (motor weakness, sensory loss, or reflex\n      change) that has worsened over the most recent two-week period.\n   b. Suspected cauda equina syndrome, including new-onset bowel or bladder\n      dysfunction or saddle anesthesia.\n   c. Known or suspected spinal infection, malignancy, or vertebral fracture\n      based on imaging or clinical findings.\n\n3. Plain radiographs of the lumbar spine have been performed and reviewed,\n   unless an exception under criterion 2 applies.\n\nCONTRAINDICATIONS\n\nMRI of the lumbar spine is NOT covered when any of the following applies:\n\nA. The member has a non-MRI-compatible cardiac pacemaker, implanted\n   defibrillator, cochlear implant, or other ferromagnetic implant for which\n   MRI is contraindicated by the device manufacturer.\n\nB. The request is for screening of asymptomatic members.\n\nC. The same study has been performed within the prior six (6) months and there\n   has been no documented change in clinical status.\n\nDOCUMENTATION REQUIREMENTS\n\nThe following documentation must be submitted with the prior authorization\nrequest:\n\ni. Office notes documenting the neurologic examination and current symptoms,\n   including duration and severity.\n\nii. Records of conservative therapy, including dates of service, type of\n    therapy, and clinical response.\n\niii. Reports of any prior imaging of the lumbar spine performed within the\n     past twelve (12) months.\n\niv. The clinical question that the requested MRI is intended to answer.\n\nThis policy is synthetic test data and does not represent an actual published\nUnited Healthcare policy. Use the real PDF for production runs.\n",
+  "criteria": [
+    {
+      "id": "C001",
+      "text": "The member has had a documented neurologic examination performed by the\n   ordering physician within the prior 30 days.",
+      "type": "required",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        285,
+        404
+      ]
+    },
+    {
+      "id": "C002",
+      "text": "The member has completed at least six (6) weeks of physician-directed\n   conservative therapy, including any combination of physical therapy,\n   chiropractic care, anti-inflammatory medication, or activity modification,\n   without clinically meaningful improvement.",
+      "type": "required",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        409,
+        674
+      ]
+    },
+    {
+      "id": "C002a",
+      "text": "Progressive neurologic deficit (motor weakness, sensory loss, or reflex\n      change) that has worsened over the most recent two-week period.",
+      "type": "required",
+      "parent_id": "C002",
+      "page_number": 1,
+      "char_span": [
+        788,
+        929
+      ]
+    },
+    {
+      "id": "C002b",
+      "text": "Suspected cauda equina syndrome, including new-onset bowel or bladder\n      dysfunction or saddle anesthesia.",
+      "type": "required",
+      "parent_id": "C002",
+      "page_number": 1,
+      "char_span": [
+        936,
+        1045
+      ]
+    },
+    {
+      "id": "C002c",
+      "text": "Known or suspected spinal infection, malignancy, or vertebral fracture\n      based on imaging or clinical findings.",
+      "type": "required",
+      "parent_id": "C002",
+      "page_number": 1,
+      "char_span": [
+        1052,
+        1167
+      ]
+    },
+    {
+      "id": "C003",
+      "text": "Plain radiographs of the lumbar spine have been performed and reviewed,\n   unless an exception under criterion 2 applies.",
+      "type": "required",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        1172,
+        1293
+      ]
+    },
+    {
+      "id": "C101",
+      "text": "The member has a non-MRI-compatible cardiac pacemaker, implanted\n   defibrillator, cochlear implant, or other ferromagnetic implant for which\n   MRI is contraindicated by the device manufacturer.",
+      "type": "contraindication",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        1392,
+        1587
+      ]
+    },
+    {
+      "id": "C102",
+      "text": "The request is for screening of asymptomatic members.",
+      "type": "contraindication",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        1592,
+        1645
+      ]
+    },
+    {
+      "id": "C103",
+      "text": "The same study has been performed within the prior six (6) months and there\n   has been no documented change in clinical status.",
+      "type": "contraindication",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        1650,
+        1778
+      ]
+    },
+    {
+      "id": "D001",
+      "text": "Office notes documenting the neurologic examination and current symptoms,\n   including duration and severity.",
+      "type": "documentation",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        1896,
+        2005
+      ]
+    },
+    {
+      "id": "D002",
+      "text": "Records of conservative therapy, including dates of service, type of\n    therapy, and clinical response.",
+      "type": "documentation",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        2011,
+        2115
+      ]
+    },
+    {
+      "id": "D003",
+      "text": "Reports of any prior imaging of the lumbar spine performed within the\n     past twelve (12) months.",
+      "type": "documentation",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        2122,
+        2221
+      ]
+    },
+    {
+      "id": "D004",
+      "text": "The clinical question that the requested MRI is intended to answer.",
+      "type": "documentation",
+      "parent_id": null,
+      "page_number": 1,
+      "char_span": [
+        2227,
+        2294
+      ]
+    }
+  ],
+  "embedding_index_path": null
+}

@@ -47,7 +47,9 @@ def _strip_code_fence(text: str) -> str:
 class ClaudeClient:
     def __init__(self, model: str | None = None, api_key: str | None = None) -> None:
         self.model = model or settings.anthropic_model
-        self._client = anthropic.Anthropic(api_key=api_key or settings.anthropic_api_key)
+        # Fall back to ANTHROPIC_API_KEY env if the setting is blank.
+        resolved_key = api_key or settings.anthropic_api_key or None
+        self._client = anthropic.Anthropic(api_key=resolved_key)
 
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(min=1, max=8))
     def complete(
