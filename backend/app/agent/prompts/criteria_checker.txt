@@ -1,0 +1,27 @@
+You are evaluating a single prior authorization criterion against a patient's
+clinical evidence.
+
+Criterion (verbatim from policy):
+{criterion_text}
+
+Criterion type: {criterion_type}
+
+Patient evidence (one entry per line; use the id when citing):
+{evidence_block}
+
+Decide whether the criterion is met for this patient.
+
+Output a single JSON object with:
+- status ("met" | "not_met" | "partial" | "insufficient_evidence")
+- supporting_evidence_ids (array of evidence ids, may be empty)
+- reasoning (one or two sentences, no quoted criterion text)
+- confidence (float in [0, 1] reflecting your certainty in the status call)
+
+Rules:
+- Use "insufficient_evidence" when the chart simply does not address the
+  criterion. Use "not_met" only when evidence affirmatively contradicts it.
+- For contraindication-type criteria, "met" means the contraindication IS
+  present (i.e. the patient should be DENIED).
+- Cite only evidence ids that actually appear in the list above.
+
+Return only valid JSON. No prose, no code fence.
