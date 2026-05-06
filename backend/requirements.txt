@@ -3,6 +3,7 @@ uvicorn[standard]==0.32.0
 pydantic==2.9.2
 pydantic-settings==2.5.2
 anthropic==0.39.0
+openai==1.55.3
 voyageai==0.3.2
 langgraph==0.2.39
 langchain-core==0.3.15
