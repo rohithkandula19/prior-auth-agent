@@ -1,39 +1,142 @@
 # Prior Authorization Agent
 
-AI agent that reads payer medical policies and patient charts, then produces citation-grounded prior authorization decisions with calibrated confidence scores and a full eval harness.
+AI agent that reads payer medical policies and patient charts, then produces
+citation-grounded prior authorization decisions with calibrated confidence
+scores and a full eval harness.
+
+The hero output: a determination page that shows the policy on the left and
+the chart on the right, with every cited span highlighted and clickable, so
+a reviewer can audit the model's reasoning in seconds rather than minutes.
 
 ## Stack
 
-- Python 3.12, FastAPI, LangGraph, Anthropic Claude
-- FAISS for policy retrieval, pgvector optional for persistence
-- Next.js 14 with Tailwind for the UI
-- Cloud Run target deployment via Artifact Registry
+- Python 3.12, FastAPI, LangGraph
+- LLM: Anthropic Claude or OpenRouter (Qwen, Llama, DeepSeek, Gemma) via a
+  switchable client
+- FAISS for per-policy criterion retrieval; Postgres + pgvector optional
+- Next.js 14, Tailwind 3 for the UI
+- Cloud Run deployment through Artifact Registry
 
 ## Quick start
 
 ```bash
-make install
-cp .env.example .env  # fill in ANTHROPIC_API_KEY
-make run
+# 1. backend
+make install                # python3.12 venv + deps
+cp .env.example .env        # set ANTHROPIC_API_KEY or OPENROUTER_API_KEY
+make run                    # uvicorn on :8000
+
+# 2. frontend (in a second shell)
+cd frontend && npm install && npm run dev   # next on :3000
 ```
 
-Open http://localhost:8000/docs.
+Open <http://localhost:3000>. The API docs are at
+<http://localhost:8000/docs>.
+
+### Switching LLM providers
+
+```bash
+# Anthropic (default)
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-sonnet-4-5-20250929
+
+# OpenRouter
+LLM_PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-...
+OPENROUTER_MODEL=qwen/qwen-2.5-72b-instruct
+```
+
+The `ClaudeClient` wrapper at `backend/app/core/llm.py` dispatches to either
+backend; the rest of the codebase is provider-agnostic.
+
+## Pipeline
+
+```
+PDF policy ──> parse_pdf ──> Claude criteria_extractor ──> Policy + FAISS index
+FHIR Bundle ──> parse_bundle ──> Patient (raw_chart + ClinicalEvidence)
+
+      Patient + Policy
+            │
+            ▼
+   ┌─────────────────────┐
+   │  criteria_checker   │   per-criterion status + confidence
+   └────────┬────────────┘
+            ▼
+   ┌─────────────────────┐
+   │  citation_generator │   verifies span bounds
+   └────────┬────────────┘
+            ▼
+   ┌─────────────────────┐
+   │  gap_identifier     │   only when status == insufficient_evidence
+   └────────┬────────────┘
+            ▼
+   ┌─────────────────────┐
+   │  calibrator         │   decision rules + weighted confidence
+   └────────┬────────────┘
+            ▼
+       Determination
+```
+
+Decision rules in the calibrator:
+
+1. Any contraindication with `status == "met"` -> `denied`.
+2. All required criteria `met` -> `approved`.
+3. Any required criterion `not_met` -> `denied`.
+4. Otherwise -> `needs_more_info`, confidence capped at 0.6.
+
+## Eval
+
+```bash
+make ingest                            # one example policy
+PYTHONPATH=backend .venv/bin/python scripts/run_eval.py --stub
+```
+
+The harness reports agreement vs gold, calibration (reliability bins, ECE),
+latency p50/p95/p99, average cost, and a 7-mode failure taxonomy
+(hallucinated criterion, missed criterion, wrong span citation, evidence
+misread, logical error, calibration failure, latency outlier). See
+[docs/eval_methodology.md](docs/eval_methodology.md).
 
 ## Layout
 
-- `backend/app/` FastAPI app, agent graph, ingestion, eval
-- `frontend/` Next.js UI
-- `data/policies/` raw payer PDFs
-- `data/gold_set/` manually labeled determinations
-- `scripts/` ingestion and eval CLIs
-- `docs/` architecture and methodology notes
+```
+backend/app/
+  agent/          LangGraph supervisor + 4 nodes + prompts
+  api/            FastAPI route modules
+  core/           LLM client, embeddings, structlog
+  eval/           Harness, metrics, failure-mode classifier
+  extraction/     FHIR Bundle to Patient, narrative evidence extractor
+  ingestion/      PDF parser, criteria extractor, FAISS indexer
+  schemas/        Pydantic models (Policy, Patient, Determination)
+  storage/        FAISS wrapper, in-memory repos
+frontend/
+  app/            Next.js routes (/policies, /determine, /results/[id], /eval)
+  components/     CitationViewer, CriteriaChecklist, ConfidenceMeter, ...
+data/
+  policies/       Raw PDFs and parsed JSON
+  patients/       FHIR Bundles
+  gold_set/       Labeled determinations (jsonl)
+scripts/          Ingestion CLI, Synthea wrapper, eval runner
+infra/            Dockerfiles, Cloud Build config, deploy.sh
+docs/             architecture.md, eval_methodology.md, teardown_post_draft.md
+```
 
-## Build status
+## Deploy (Cloud Run via Artifact Registry)
 
-Initial scaffold. See `docs/architecture.md` for the full design.
+```bash
+PROJECT_ID=rotune-493315 REGION=us-central1 ./infra/deploy.sh
+```
+
+The script creates the `priorauth` repo if needed and submits Cloud Build,
+which builds and deploys both services. Secrets `ANTHROPIC_API_KEY` and
+`OPENROUTER_API_KEY` must exist in Secret Manager.
 
 ## House rules
 
 - No em dashes anywhere in code, comments, docs, or UI copy.
 - Python venv at `/opt/homebrew/bin/python3.12`.
 - Container images pushed to Artifact Registry, never gcr.io.
+
+## License
+
+Synthetic policies and patients only by default. No real PHI is committed.

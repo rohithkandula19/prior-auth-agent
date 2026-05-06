@@ -1,0 +1,109 @@
+# Builds and pushes both backend and frontend images to Artifact Registry,
+# then deploys both as Cloud Run services. Trigger from repo root:
+#
+#   gcloud builds submit --config infra/cloudbuild.yaml \
+#       --substitutions _REGION=us-central1
+#
+# Substitutions you may want to override:
+#   _REGION       Cloud Run region (default us-central1)
+#   _REPO         Artifact Registry repo name (default priorauth)
+#   _BACKEND_SVC  Cloud Run service name for backend
+#   _FRONTEND_SVC Cloud Run service name for frontend
+#   _LLM_PROVIDER anthropic | openrouter
+#
+# Set these as Cloud Build secrets so they are not stored in plain text:
+#   ANTHROPIC_API_KEY, OPENROUTER_API_KEY
+
+substitutions:
+  _REGION: us-central1
+  _REPO: priorauth
+  _BACKEND_SVC: priorauth-backend
+  _FRONTEND_SVC: priorauth-frontend
+  _LLM_PROVIDER: openrouter
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/${PROJECT_ID}/secrets/ANTHROPIC_API_KEY/versions/latest
+      env: ANTHROPIC_API_KEY
+    - versionName: projects/${PROJECT_ID}/secrets/OPENROUTER_API_KEY/versions/latest
+      env: OPENROUTER_API_KEY
+
+steps:
+  - id: build-backend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - backend/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/backend:${SHORT_SHA}
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/backend:latest
+      - .
+
+  - id: build-frontend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - frontend/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend:${SHORT_SHA}
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend:latest
+      - .
+
+  - id: push-backend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/backend
+
+  - id: push-frontend
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend
+
+  - id: deploy-backend
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    secretEnv: [ANTHROPIC_API_KEY, OPENROUTER_API_KEY]
+    args:
+      - -ceux
+      - |
+        gcloud run deploy ${_BACKEND_SVC} \
+          --image ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/backend:${SHORT_SHA} \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 8000 \
+          --cpu 1 --memory 1Gi --concurrency 20 \
+          --set-env-vars "LLM_PROVIDER=${_LLM_PROVIDER},ANTHROPIC_API_KEY=$$ANTHROPIC_API_KEY,OPENROUTER_API_KEY=$$OPENROUTER_API_KEY"
+
+  - id: deploy-frontend
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: bash
+    args:
+      - -ceux
+      - |
+        BACKEND_URL=$(gcloud run services describe ${_BACKEND_SVC} --region ${_REGION} --format='value(status.url)')
+        gcloud run deploy ${_FRONTEND_SVC} \
+          --image ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend:${SHORT_SHA} \
+          --region ${_REGION} \
+          --platform managed \
+          --allow-unauthenticated \
+          --port 3000 \
+          --cpu 1 --memory 512Mi --concurrency 80 \
+          --set-env-vars "NEXT_PUBLIC_API_BASE=$${BACKEND_URL}"
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/backend:${SHORT_SHA}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/backend:latest
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend:${SHORT_SHA}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/frontend:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
