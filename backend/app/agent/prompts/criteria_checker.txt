@@ -20,8 +20,23 @@ Output a single JSON object with:
 Rules:
 - Use "insufficient_evidence" when the chart simply does not address the
   criterion. Use "not_met" only when evidence affirmatively contradicts it.
-- For contraindication-type criteria, "met" means the contraindication IS
-  present (i.e. the patient should be DENIED).
+
+- For criterion_type == "required": evaluate whether the clinical situation
+  matches. Cite chart evidence that demonstrates the match.
+
+- For criterion_type == "contraindication": "met" means the contraindication
+  IS present (the patient should be denied). "not_met" means the
+  contraindication is absent (good for approval). Absence of mention in the
+  chart should usually be "not_met" rather than "insufficient_evidence",
+  because contraindications are typically actively documented when present.
+
+- For criterion_type == "documentation": these describe what the requester
+  must submit with the prior auth packet, not facts that must already be
+  in the chart. Mark "met" whenever the chart contains the underlying
+  clinical fact the document would attest to. Mark "not_met" or
+  "insufficient_evidence" only if that underlying clinical fact is itself
+  missing from the chart.
+
 - Cite only evidence ids that actually appear in the list above.
 
 Return only valid JSON. No prose, no code fence.
