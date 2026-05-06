@@ -41,6 +41,39 @@ export const api = {
       body: JSON.stringify({ skip_embeddings: true, ...body }),
     }),
 
+  ingestPolicyFile: async (
+    file: File,
+    fields: {
+      payer?: string;
+      procedure_code?: string;
+      procedure_name?: string;
+      effective_date?: string;
+      source_url?: string;
+      policy_id?: string;
+      skip_embeddings?: boolean;
+    } = {}
+  ): Promise<Policy> => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("payer", fields.payer ?? "UnitedHealthcare");
+    fd.append("procedure_code", fields.procedure_code ?? "72148");
+    fd.append("procedure_name", fields.procedure_name ?? "MRI Lumbar Spine");
+    fd.append("effective_date", fields.effective_date ?? "2025-01-01");
+    fd.append("source_url", fields.source_url ?? "");
+    if (fields.policy_id) fd.append("policy_id", fields.policy_id);
+    fd.append("skip_embeddings", String(fields.skip_embeddings ?? true));
+    const res = await fetch(`${BASE}/policies/ingest`, {
+      method: "POST",
+      body: fd,
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`${res.status} ${res.statusText}: ${text}`);
+    }
+    return res.json() as Promise<Policy>;
+  },
+
   listPatients: () => request<Patient[]>("/patients"),
   getPatient: (id: string) => request<Patient>(`/patients/${id}`),
   createPatient: (fhirBundle: unknown, patient_id?: string) =>
