@@ -95,6 +95,24 @@ export function EvalDashboard({ initial }: { initial: EvalSummary }) {
         <Tile label="Cost" value={`$${cost.toFixed(2)}`} hint="per determination" />
       </div>
 
+      {summary.citations && summary.citations.scored_cases > 0 ? (
+        <section className="rounded-xl border border-line/70 bg-white p-6">
+          <p className="eyebrow mb-4">
+            Citation precision and recall · {summary.citations.scored_cases} scored case
+            {summary.citations.scored_cases === 1 ? "" : "s"}
+          </p>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Tile label="Precision" value={fmt(summary.citations.precision)} compact />
+            <Tile label="Recall" value={fmt(summary.citations.recall)} compact />
+            <Tile label="F1" value={fmt(summary.citations.f1)} compact />
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            IoU threshold 0.5. Spans are computed against verbatim chart
+            substrings declared in the gold set.
+          </p>
+        </section>
+      ) : null}
+
       <div className="grid gap-5 md:grid-cols-2">
         <section className="rounded-xl border border-line/70 bg-white p-6">
           <p className="eyebrow mb-4">Calibration curve</p>
@@ -171,11 +189,13 @@ function Tile({
   value,
   hint,
   hintTone,
+  compact = false,
 }: {
   label: string;
   value: string;
   hint?: string;
   hintTone?: "good" | "warn";
+  compact?: boolean;
 }) {
   const hintCls =
     hintTone === "good"
@@ -184,12 +204,19 @@ function Tile({
       ? "text-amber-600"
       : "text-slate-500";
   return (
-    <div className="rounded-xl border border-line/70 bg-white p-5">
+    <div className={`rounded-xl border border-line/70 bg-white ${compact ? "p-4" : "p-5"}`}>
       <p className="eyebrow">{label}</p>
-      <p className="mt-2 text-3xl font-semibold tracking-tight">{value}</p>
+      <p className={`mt-2 font-semibold tracking-tight ${compact ? "text-2xl" : "text-3xl"}`}>
+        {value}
+      </p>
       {hint ? <p className={`mt-1 text-xs ${hintCls}`}>{hint}</p> : null}
     </div>
   );
+}
+
+function fmt(v: number | null): string {
+  if (v === null || v === undefined) return "n/a";
+  return v.toFixed(2);
 }
 
 function formatMs(ms: number): string {

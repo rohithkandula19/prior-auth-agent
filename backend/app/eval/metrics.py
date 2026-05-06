@@ -89,6 +89,15 @@ def summarise(records: list[dict]) -> dict[str, Any]:
         k: {"count": v, "pct": round(v / fm_total, 3)}
         for k, v in fm_counts.most_common()
     }
+    cit_p = [r["citation_precision"] for r in records if r.get("citation_precision") is not None]
+    cit_r = [r["citation_recall"] for r in records if r.get("citation_recall") is not None]
+    cit_f1 = [r["citation_f1"] for r in records if r.get("citation_f1") is not None]
+    citations = {
+        "precision": round(mean(cit_p), 3) if cit_p else None,
+        "recall": round(mean(cit_r), 3) if cit_r else None,
+        "f1": round(mean(cit_f1), 3) if cit_f1 else None,
+        "scored_cases": len(cit_p),
+    }
     return {
         "run_version": "v1",
         "n": n,
@@ -98,6 +107,7 @@ def summarise(records: list[dict]) -> dict[str, Any]:
         "by_decision": decision_breakdown,
         "latency_ms": latency_percentiles(records),
         "avg_cost_usd": round(mean(r["cost_usd"] for r in records), 4),
+        "citations": citations,
         "failure_modes": failure_modes,
     }
 

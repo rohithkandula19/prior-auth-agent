@@ -33,6 +33,7 @@ from app.agent.graph import run_determination
 from app.config import settings
 from app.core.llm import ClaudeClient
 from app.core.logging import get_logger
+from app.eval.citations import score as score_citations
 from app.eval.failure_modes import classify
 from app.eval.metrics import summarise
 from app.extraction.chart_parser import parse_bundle_file
@@ -52,6 +53,10 @@ class GoldCase(BaseModel):
     patient_path: str
     expected_decision: str
     expected_criteria: dict[str, str] = Field(default_factory=dict)
+    # Optional: per-criterion expected chart-citation substrings. Used to
+    # compute citation precision/recall when present; cases without it
+    # contribute None to the aggregate.
+    expected_chart_citations: dict[str, list[str]] = Field(default_factory=dict)
     payer: str = "UnitedHealthcare"
     procedure_code: str = "72148"
     procedure_name: str = "MRI Lumbar Spine"
@@ -67,6 +72,9 @@ class EvalRecord(BaseModel):
     cost_usd: float
     latency_ms: int
     failure_modes: list[str] = Field(default_factory=list)
+    citation_precision: float | None = None
+    citation_recall: float | None = None
+    citation_f1: float | None = None
 
 
 class EvalRun(BaseModel):
@@ -166,6 +174,11 @@ def run_eval(
             chart_len=len(patient.raw_chart),
             policy_len=len(policy.raw_text),
         )
+        cit = score_citations(
+            patient.raw_chart,
+            determination.criterion_evaluations,
+            case.expected_chart_citations or None,
+        )
         rec = EvalRecord(
             case_id=case.case_id,
             gold_decision=case.expected_decision,
@@ -175,6 +188,9 @@ def run_eval(
             cost_usd=determination.cost_usd,
             latency_ms=determination.latency_ms,
             failure_modes=modes,
+            citation_precision=cit.precision,
+            citation_recall=cit.recall,
+            citation_f1=cit.f1,
         )
         records.append(rec)
         record_dicts.append(rec.model_dump())

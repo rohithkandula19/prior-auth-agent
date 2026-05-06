@@ -89,5 +89,11 @@ export interface EvalSummary {
   by_decision?: Record<string, { n: number; correct: number; accuracy: number }>;
   latency_ms?: { p50: number; p95: number; p99: number };
   avg_cost_usd?: number;
+  citations?: {
+    precision: number | null;
+    recall: number | null;
+    f1: number | null;
+    scored_cases: number;
+  };
   failure_modes?: Record<string, { count: number; pct: number }> | Record<string, number>;
 }
