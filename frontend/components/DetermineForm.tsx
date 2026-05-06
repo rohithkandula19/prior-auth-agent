@@ -30,6 +30,13 @@ export function DetermineForm({
   const [busy, setBusy] = useState(false);
   const [policyOpen, setPolicyOpen] = useState(false);
   const [patientOpen, setPatientOpen] = useState(false);
+  const [progress, setProgress] = useState<{
+    i: number;
+    total: number;
+    last_id?: string;
+    last_status?: string;
+    phase?: string;
+  } | null>(null);
 
   const selectedPolicy = useMemo(
     () => policies.find((p) => p.id === policyId) ?? policies[0],
@@ -62,12 +69,42 @@ export function DetermineForm({
   async function run() {
     setErr(null);
     setBusy(true);
+    setProgress({ i: 0, total: 0, phase: "Starting..." });
     try {
-      const det = await api.determine(patientId, policyId);
-      router.push(`/results/${det.id}`);
+      let determinationId: string | null = null;
+      for await (const ev of api.determineStream(patientId, policyId)) {
+        const evt = ev as Record<string, unknown>;
+        const name = evt.event;
+        if (name === "started") {
+          setProgress({
+            i: 0,
+            total: Number(evt.criteria_count) || 0,
+            phase: "Checking criteria",
+          });
+        } else if (name === "criterion") {
+          setProgress({
+            i: Number(evt.i) || 0,
+            total: Number(evt.total) || 0,
+            last_id: String(evt.criterion_id),
+            last_status: String(evt.status),
+            phase: "Checking criteria",
+          });
+        } else if (name === "citations_verified") {
+          setProgress((p) => (p ? { ...p, phase: "Verifying citations" } : p));
+        } else if (name === "gaps") {
+          setProgress((p) => (p ? { ...p, phase: "Identifying gaps" } : p));
+        } else if (name === "calibrated") {
+          setProgress((p) => (p ? { ...p, phase: "Calibrating decision" } : p));
+        } else if (name === "done") {
+          determinationId = String(evt.determination_id);
+        }
+      }
+      if (determinationId) router.push(`/results/${determinationId}`);
+      else throw new Error("Stream finished without a determination id");
     } catch (e) {
       setErr(e instanceof Error ? e.message : String(e));
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -157,21 +194,54 @@ export function DetermineForm({
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <button
-          onClick={run}
-          disabled={busy || !patientId || !policyId}
-          className="inline-flex items-center gap-2 rounded-md bg-ink px-5 py-3 text-sm font-medium text-white disabled:opacity-40"
-        >
-          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-          {busy ? "Running..." : "Run determination"}
-        </button>
-        <span className="text-xs text-slate-500">
-          Estimated 40-60 seconds · ~$0.09
-        </span>
-        {err ? <span className="text-xs text-red-600">{err}</span> : null}
+      <div className="space-y-3">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={run}
+            disabled={busy || !patientId || !policyId}
+            className="inline-flex items-center gap-2 rounded-md bg-ink px-5 py-3 text-sm font-medium text-white disabled:opacity-40"
+          >
+            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            {busy ? "Running..." : "Run determination"}
+          </button>
+          <span className="text-xs text-slate-500">
+            Estimated 40-60 seconds · ~$0.09
+          </span>
+          {err ? <span className="text-xs text-red-600">{err}</span> : null}
+        </div>
+
+        {progress ? (
+          <div className="rounded-xl border border-line/70 bg-white p-5">
+            <div className="flex items-baseline justify-between">
+              <p className="text-sm font-medium text-slate-700">
+                {progress.phase ?? "Working..."}
+              </p>
+              <p className="font-mono text-xs text-slate-500">
+                {progress.i}/{progress.total}
+              </p>
+            </div>
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-ink transition-all"
+                style={{
+                  width: `${
+                    progress.total > 0
+                      ? Math.round((progress.i / progress.total) * 100)
+                      : 5
+                  }%`,
+                }}
+              />
+            </div>
+            {progress.last_id ? (
+              <p className="mt-2 text-xs text-slate-500">
+                Last: <span className="font-mono">{progress.last_id}</span> ·{" "}
+                <span>{progress.last_status}</span>
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );

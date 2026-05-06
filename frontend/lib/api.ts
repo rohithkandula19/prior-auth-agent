@@ -87,6 +87,47 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ patient_id, policy_id }),
     }),
+
+  determineStream: async function* (
+    patient_id: string,
+    policy_id: string
+  ): AsyncGenerator<Record<string, unknown>, void, unknown> {
+    const res = await fetch(`${BASE}/determine/stream`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ patient_id, policy_id }),
+      cache: "no-store",
+    });
+    if (!res.ok || !res.body) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`${res.status} ${res.statusText}: ${text}`);
+    }
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          yield JSON.parse(line);
+        } catch {
+          // skip malformed line
+        }
+      }
+    }
+    if (buffer.trim()) {
+      try {
+        yield JSON.parse(buffer);
+      } catch {
+        // ignore
+      }
+    }
+  },
   getDetermination: (id: string) => request<Determination>(`/determinations/${id}`),
   listDeterminations: () => request<Determination[]>("/determinations"),
 

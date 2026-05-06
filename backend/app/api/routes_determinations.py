@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.agent.graph import run_determination
+from app.agent.streaming import stream_determination
 from app.schemas.determination import Determination
 from app.storage.repo import determination_repo, patient_repo, policy_repo
 
@@ -41,3 +43,18 @@ async def get_determination(determination_id: str) -> Determination:
 @router.get("/determinations", response_model=list[Determination])
 async def list_determinations() -> list[Determination]:
     return determination_repo.list()
+
+
+@router.post("/determine/stream")
+async def determine_stream(req: DetermineRequest):
+    patient = patient_repo.get(req.patient_id)
+    if not patient:
+        raise HTTPException(404, "patient not found")
+    policy = policy_repo.get(req.policy_id)
+    if not policy:
+        raise HTTPException(404, "policy not found")
+    return StreamingResponse(
+        stream_determination(policy, patient),
+        media_type="application/x-ndjson",
+        headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"},
+    )
