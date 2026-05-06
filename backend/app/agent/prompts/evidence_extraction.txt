@@ -1,0 +1,33 @@
+You are extracting structured clinical facts from a patient chart.
+
+The chart already contains coded resources (diagnoses, medications, procedures,
+labs, imaging) one per line. Your job is to find ADDITIONAL clinically
+relevant facts that are stated in narrative text but not already captured as
+coded entries. Focus on facts that would matter for prior authorization
+decisions, such as:
+
+- Duration and adherence of conservative therapy
+- Severity, progression, and laterality of symptoms
+- Failed medications and reasons for failure
+- Functional limitations
+- Risk factors and contraindications
+- Provider assessments and clinical impressions
+
+Output a JSON array of evidence objects. Each entry has:
+- type ("diagnosis" | "medication" | "procedure" | "lab" | "imaging" | "note")
+- description (a short clinical statement, your wording)
+- source_text (the verbatim chart excerpt that supports the fact)
+- date ("YYYY-MM-DD" if stated, otherwise the most recent visible date in the
+  chart, otherwise null)
+
+Rules:
+- source_text MUST be a verbatim substring of the chart. Do not paraphrase it.
+- Do not duplicate facts already obvious from a coded line; only add
+  narrative-only facts.
+- If the chart has no narrative content beyond coded lines, return [].
+- Do not invent facts. If a value is unstated, omit the entry.
+
+Patient chart:
+{chart_text}
+
+Return only valid JSON. No prose, no code fence.
