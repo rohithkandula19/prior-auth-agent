@@ -1,0 +1,77 @@
+{
+  "resourceType": "Bundle",
+  "id": "sample-back-pain-001",
+  "type": "collection",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "pt-back-001",
+        "gender": "female",
+        "birthDate": "1972-04-12"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Condition",
+        "id": "cond-1",
+        "onsetDateTime": "2025-01-10",
+        "code": {
+          "coding": [{"system": "http://hl7.org/fhir/sid/icd-10", "code": "M54.5", "display": "Low back pain"}]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "proc-pt-1",
+        "performedDateTime": "2025-02-05",
+        "code": {
+          "coding": [{"system": "http://snomed.info/sct", "code": "91251008", "display": "Physical therapy procedure"}]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Procedure",
+        "id": "proc-pt-2",
+        "performedDateTime": "2025-03-19",
+        "code": {
+          "coding": [{"system": "http://snomed.info/sct", "code": "91251008", "display": "Physical therapy procedure (8 weeks completed)"}]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "MedicationRequest",
+        "id": "med-1",
+        "authoredOn": "2025-01-15",
+        "medicationCodeableConcept": {
+          "coding": [{"system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "5640", "display": "Ibuprofen 600 MG Oral Tablet"}]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "id": "obs-neuro-1",
+        "effectiveDateTime": "2025-04-01",
+        "category": [{"coding": [{"code": "exam"}]}],
+        "code": {
+          "coding": [{"system": "http://loinc.org", "code": "11506-3", "display": "Neurologic examination - normal motor and sensory"}]
+        }
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "dr-xray-1",
+        "effectiveDateTime": "2025-03-20",
+        "category": [{"coding": [{"code": "imaging"}]}],
+        "code": {
+          "coding": [{"system": "http://loinc.org", "code": "36293-2", "display": "XR Lumbar spine 2 views - mild degenerative changes"}]
+        }
+      }
+    }
+  ]
+}
