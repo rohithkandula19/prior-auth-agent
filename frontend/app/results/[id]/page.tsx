@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
+import { AppealPanel } from "@/components/AppealPanel";
 import { CitationCards } from "@/components/CitationCards";
 import { CriteriaChecklist, metCount } from "@/components/CriteriaChecklist";
 import type { DecisionType } from "@/lib/types";
@@ -125,6 +126,8 @@ export default async function ResultsPage({
           evaluations={determination.criterion_evaluations}
         />
       </section>
+
+      {decision !== "approved" ? <AppealPanel determinationId={determination.id} /> : null}
     </div>
   );
 }

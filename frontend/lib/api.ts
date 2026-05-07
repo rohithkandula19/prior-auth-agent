@@ -131,6 +131,24 @@ export const api = {
   getDetermination: (id: string) => request<Determination>(`/determinations/${id}`),
   listDeterminations: () => request<Determination[]>("/determinations"),
 
+  precheck: (policy_id: string, note: string, age?: number, sex?: string) =>
+    request<{
+      determination: Determination;
+      likely_decision: string;
+      add_before_submitting: { criterion_id: string; title: string; why: string }[];
+      will_clear: { criterion_id: string; title: string; why: string }[];
+      confidence: number;
+    }>("/precheck", {
+      method: "POST",
+      body: JSON.stringify({ policy_id, note, age, sex }),
+    }),
+
+  appeal: (determination_id: string) =>
+    request<{ letter: string; cost_usd: number; latency_ms: number }>(
+      `/determinations/${determination_id}/appeal`,
+      { method: "POST", body: JSON.stringify({}) }
+    ),
+
   metrics: () => request<EvalSummary>("/eval/metrics"),
   runEval: (limit?: number) =>
     request<{ run_id: string; n: number; agreement: number; summary: EvalSummary }>(

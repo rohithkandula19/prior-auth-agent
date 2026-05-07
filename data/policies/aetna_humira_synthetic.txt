@@ -1,0 +1,58 @@
+Aetna Clinical Policy Bulletin (synthetic test data, not a real Aetna policy)
+Adalimumab (Humira) for Rheumatoid Arthritis
+HCPCS J0135
+Effective Date: January 1, 2025
+
+COVERAGE RATIONALE
+
+Adalimumab (Humira) is medically necessary for the treatment of moderately to
+severely active rheumatoid arthritis when ALL of the following criteria are met:
+
+1. The member is at least 18 years of age and has a confirmed diagnosis of
+   rheumatoid arthritis (ICD-10 M05.x or M06.x) documented by a board-certified
+   rheumatologist.
+
+2. The member has had an inadequate response, intolerance, or contraindication
+   to at least two conventional disease-modifying antirheumatic drugs (DMARDs)
+   used for a minimum of three (3) months each. Acceptable conventional DMARDs
+   include methotrexate, sulfasalazine, hydroxychloroquine, and leflunomide.
+
+3. The member has had a tuberculosis (TB) screening test (interferon-gamma
+   release assay or PPD) performed within the prior twelve (12) months and
+   the result is negative, or the member has completed treatment for latent TB.
+
+4. The member has documented active disease as evidenced by either:
+   a. At least six (6) tender joints AND six (6) swollen joints on physical
+      examination.
+   b. Elevated inflammatory markers (CRP > 1.0 mg/dL or ESR > 28 mm/hr).
+
+CONTRAINDICATIONS
+
+Adalimumab is NOT covered when any of the following applies:
+
+A. The member has an active serious infection, including active TB or
+   sepsis.
+
+B. The member has a history of demyelinating disease (multiple sclerosis,
+   optic neuritis) or New York Heart Association class III or IV heart
+   failure.
+
+C. The member is pregnant and there is no documented discussion of risks
+   and alternatives.
+
+DOCUMENTATION REQUIREMENTS
+
+The following must be submitted with the prior authorization request:
+
+i. Office notes from the prescribing rheumatologist documenting the joint
+   examination and disease activity score.
+
+ii. Records of prior DMARD trials including drug, dose, duration, and reason
+    for discontinuation.
+
+iii. Results of the most recent TB screening test.
+
+iv. The proposed dosing regimen and duration of therapy.
+
+This policy is synthetic test data and does not represent an actual published
+Aetna policy. Use the real PDF for production runs.

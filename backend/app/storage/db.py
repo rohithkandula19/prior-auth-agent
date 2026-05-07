@@ -66,6 +66,21 @@ class DeterminationRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class AuditRow(Base):
+    """Append-only audit log of PHI-touching API calls."""
+
+    __tablename__ = "audit_log"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    actor: Mapped[str] = mapped_column(String, default="anonymous", index=True)
+    method: Mapped[str] = mapped_column(String, nullable=False)
+    path: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    status_code: Mapped[int] = mapped_column(nullable=False)
+    entity_type: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    entity_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    duration_ms: Mapped[int] = mapped_column(default=0)
+
+
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
     log.info("db_initialized", url=settings.database_url)

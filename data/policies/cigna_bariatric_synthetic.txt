@@ -1,0 +1,59 @@
+Cigna Medical Coverage Policy (synthetic test data, not a real Cigna policy)
+Bariatric Surgery (Roux-en-Y Gastric Bypass, Sleeve Gastrectomy)
+CPT 43644, 43775
+Effective Date: January 1, 2025
+
+COVERAGE RATIONALE
+
+Bariatric surgery is medically necessary when ALL of the following criteria
+are met:
+
+1. The member is at least 18 years of age and has a body mass index (BMI) of
+   either:
+   a. 40 kg/m^2 or greater, OR
+   b. 35 kg/m^2 or greater with at least one obesity-related comorbidity,
+      such as type 2 diabetes mellitus, obstructive sleep apnea, hypertension,
+      or non-alcoholic steatohepatitis.
+
+2. The member has documented participation in a physician-supervised weight
+   management program of at least six (6) consecutive months duration within
+   the two (2) years preceding the prior authorization request, with monthly
+   visits documented in the medical record.
+
+3. The member has completed a psychological evaluation by a licensed mental
+   health provider that confirms the absence of contraindications to surgery
+   and demonstrates an understanding of postoperative requirements.
+
+4. The member has completed a nutritional evaluation by a registered
+   dietitian and demonstrates understanding of the postoperative diet.
+
+CONTRAINDICATIONS
+
+Bariatric surgery is NOT covered when any of the following applies:
+
+A. The member has an untreated major depressive disorder, active substance
+   use disorder, or active eating disorder.
+
+B. The member is pregnant or planning pregnancy within the next twelve (12)
+   months.
+
+C. The member has a medical condition that contraindicates general
+   anesthesia.
+
+DOCUMENTATION REQUIREMENTS
+
+The following must be submitted with the prior authorization request:
+
+i. Documentation of height and weight measurements at each monthly visit
+   during the supervised weight management program.
+
+ii. The full psychological evaluation report, including the licensed
+    provider's recommendation.
+
+iii. The nutritional evaluation report.
+
+iv. A list of obesity-related comorbidities with supporting clinical
+    documentation.
+
+This policy is synthetic test data and does not represent an actual published
+Cigna policy. Use the real PDF for production runs.

@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
+from app.agent.appeal import generate_appeal
 from app.agent.graph import run_determination
 from app.agent.streaming import stream_determination
 from app.schemas.determination import Determination
@@ -43,6 +44,18 @@ async def get_determination(determination_id: str) -> Determination:
 @router.get("/determinations", response_model=list[Determination])
 async def list_determinations() -> list[Determination]:
     return determination_repo.list()
+
+
+@router.post("/determinations/{determination_id}/appeal")
+async def post_appeal(determination_id: str) -> dict:
+    determination = determination_repo.get(determination_id)
+    if not determination:
+        raise HTTPException(404, "determination not found")
+    policy = policy_repo.get(determination.policy_id)
+    patient = patient_repo.get(determination.patient_id)
+    if not policy or not patient:
+        raise HTTPException(404, "policy or patient missing")
+    return generate_appeal(determination, policy, patient)
 
 
 @router.post("/determine/stream")

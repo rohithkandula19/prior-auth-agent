@@ -1,0 +1,24 @@
+{
+  "resourceType": "Bundle",
+  "id": "sample-bariatric-001",
+  "type": "collection",
+  "entry": [
+    {"resource": {"resourceType": "Patient", "id": "SYNTH-3081", "gender": "male", "birthDate": "1979-02-14"}},
+    {"resource": {"resourceType": "Observation", "id": "bmi-1", "effectiveDateTime": "2025-04-22",
+      "category": [{"coding": [{"code": "vital-signs"}]}],
+      "code": {"coding": [{"system": "http://loinc.org", "code": "39156-5", "display": "Body mass index"}]},
+      "valueQuantity": {"value": 42.6, "unit": "kg/m2"}}},
+    {"resource": {"resourceType": "Condition", "id": "t2dm-1", "onsetDateTime": "2022-07-01",
+      "code": {"coding": [{"system": "http://hl7.org/fhir/sid/icd-10", "code": "E11.9", "display": "Type 2 diabetes mellitus without complications"}]}}},
+    {"resource": {"resourceType": "Condition", "id": "osa-1", "onsetDateTime": "2023-03-19",
+      "code": {"coding": [{"system": "http://hl7.org/fhir/sid/icd-10", "code": "G47.33", "display": "Obstructive sleep apnea, on CPAP"}]}}},
+    {"resource": {"resourceType": "Procedure", "id": "wmgmt-1", "performedDateTime": "2024-12-15",
+      "code": {"coding": [{"system": "http://snomed.info/sct", "code": "182922004", "display": "Physician-supervised weight management - 7 monthly visits over 2024-06 to 2024-12"}]}}},
+    {"resource": {"resourceType": "DiagnosticReport", "id": "psych-1", "effectiveDateTime": "2025-02-08",
+      "category": [{"coding": [{"code": "exam"}]}],
+      "code": {"coding": [{"system": "http://loinc.org", "code": "75275-8", "display": "Psychological evaluation by Dr. Rivera, LCSW: cleared for surgery, no contraindications"}]}}},
+    {"resource": {"resourceType": "DiagnosticReport", "id": "nutri-1", "effectiveDateTime": "2025-03-01",
+      "category": [{"coding": [{"code": "exam"}]}],
+      "code": {"coding": [{"system": "http://loinc.org", "code": "75275-8", "display": "Nutritional evaluation by RDN: patient demonstrates understanding of postoperative diet"}]}}}
+  ]
+}

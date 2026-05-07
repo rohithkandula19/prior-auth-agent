@@ -4,11 +4,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import (
+    routes_audit,
     routes_determinations,
     routes_eval,
     routes_patients,
     routes_policies,
+    routes_precheck,
 )
+from app.api.audit import install_audit
 from app.core.logging import configure_logging, get_logger
 from app.storage.db import init_db
 
@@ -38,10 +41,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Audit middleware: must be installed AFTER CORS so preflight is not logged.
+install_audit(app)
+
 app.include_router(routes_policies.router)
 app.include_router(routes_patients.router)
 app.include_router(routes_determinations.router)
+app.include_router(routes_precheck.router)
 app.include_router(routes_eval.router)
+app.include_router(routes_audit.router)
 
 
 @app.get("/health")

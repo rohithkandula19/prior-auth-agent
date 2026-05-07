@@ -1,0 +1,24 @@
+{
+  "resourceType": "Bundle",
+  "id": "sample-ra-001",
+  "type": "collection",
+  "entry": [
+    {"resource": {"resourceType": "Patient", "id": "SYNTH-2034", "gender": "female", "birthDate": "1975-08-21"}},
+    {"resource": {"resourceType": "Condition", "id": "ra-1", "onsetDateTime": "2023-09-12",
+      "code": {"coding": [{"system": "http://hl7.org/fhir/sid/icd-10", "code": "M05.79", "display": "Rheumatoid arthritis with rheumatoid factor"}]}}},
+    {"resource": {"resourceType": "MedicationRequest", "id": "mtx-1", "authoredOn": "2024-01-08",
+      "medicationCodeableConcept": {"coding": [{"system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "6851", "display": "Methotrexate 15 MG weekly (4 months trial, inadequate response)"}]}}},
+    {"resource": {"resourceType": "MedicationRequest", "id": "ssz-1", "authoredOn": "2024-06-04",
+      "medicationCodeableConcept": {"coding": [{"system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "9524", "display": "Sulfasalazine 1000 MG BID (5 months trial, GI intolerance)"}]}}},
+    {"resource": {"resourceType": "Observation", "id": "exam-joints", "effectiveDateTime": "2025-04-12",
+      "category": [{"coding": [{"code": "exam"}]}],
+      "code": {"coding": [{"system": "http://loinc.org", "code": "44968-1", "display": "Joint exam: 8 tender joints and 7 swollen joints, MCP and PIP bilaterally"}]}}},
+    {"resource": {"resourceType": "Observation", "id": "lab-crp", "effectiveDateTime": "2025-04-12",
+      "category": [{"coding": [{"code": "laboratory"}]}],
+      "code": {"coding": [{"system": "http://loinc.org", "code": "1988-5", "display": "C-reactive protein"}]},
+      "valueQuantity": {"value": 2.4, "unit": "mg/dL"}}},
+    {"resource": {"resourceType": "DiagnosticReport", "id": "tb-1", "effectiveDateTime": "2024-11-05",
+      "category": [{"coding": [{"code": "laboratory"}]}],
+      "code": {"coding": [{"system": "http://loinc.org", "code": "71773-2", "display": "QuantiFERON TB Gold negative"}]}}}
+  ]
+}
