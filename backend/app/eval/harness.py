@@ -20,11 +20,14 @@ a factory hook.
 from __future__ import annotations
 
 import json
+import os
 import time
 import uuid
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime
 from pathlib import Path
+from threading import Lock
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -92,6 +95,16 @@ ClientFactory = Callable[[], ClaudeClient | None]
 
 
 def _default_policy_factory(case: GoldCase) -> Policy:
+    """Reuse the already-ingested policy if one exists in the repo. The
+    repo round-trip is microseconds; the LLM extraction it bypasses costs
+    25-40 seconds. Only fall through to a fresh extraction if nothing is
+    persisted yet."""
+    from app.storage.repo import policy_repo
+
+    existing = policy_repo.get(case.policy_id)
+    if existing is not None:
+        return existing
+
     src = (ROOT / case.policy_path).resolve()
     if src.suffix.lower() == ".pdf":
         parsed = parse_pdf(src)
@@ -130,6 +143,7 @@ def run_eval(
     policy_factory: PolicyFactory | None = None,
     client_factory: ClientFactory | None = None,
     out_dir: Path | None = None,
+    case_concurrency: int | None = None,
 ) -> EvalRun:
     cases = load_gold_set(gold_set_path)
     if limit:
@@ -137,46 +151,42 @@ def run_eval(
 
     pf = policy_factory or _default_policy_factory
     cf = client_factory or (lambda: None)
+    case_workers = case_concurrency or int(os.environ.get("EVAL_CASE_CONCURRENCY", "4"))
 
     # Memoize policies across cases. The default extractor calls Claude
     # which is the single biggest cost; running it 10x for the same id is
     # pure waste. Cache key is policy_id since cases referencing the same
     # id should resolve to the same Policy object.
     policy_cache: dict[str, Policy] = {}
+    policy_cache_lock = Lock()
 
     def get_policy(case: GoldCase) -> Policy:
-        if case.policy_id in policy_cache:
-            return policy_cache[case.policy_id]
+        with policy_cache_lock:
+            if case.policy_id in policy_cache:
+                return policy_cache[case.policy_id]
         p = pf(case)
-        policy_cache[case.policy_id] = p
-        return p
+        with policy_cache_lock:
+            policy_cache.setdefault(case.policy_id, p)
+            return policy_cache[case.policy_id]
 
-    started = datetime.utcnow()
-    t0 = time.monotonic()
-    records: list[EvalRecord] = []
-    record_dicts: list[dict] = []
-
-    for case in cases:
+    def evaluate(case: GoldCase) -> tuple[EvalRecord, dict]:
         try:
             policy = get_policy(case)
             patient = parse_bundle_file((ROOT / case.patient_path).resolve())
             determination = run_determination(policy, patient, client=cf())
         except Exception as exc:
             log.error("eval_case_error", case_id=case.case_id, error=str(exc))
-            records.append(
-                EvalRecord(
-                    case_id=case.case_id,
-                    gold_decision=case.expected_decision,
-                    predicted_decision="error",
-                    confidence=0.0,
-                    agree=False,
-                    cost_usd=0.0,
-                    latency_ms=0,
-                    failure_modes=["pipeline_error"],
-                )
+            rec = EvalRecord(
+                case_id=case.case_id,
+                gold_decision=case.expected_decision,
+                predicted_decision="error",
+                confidence=0.0,
+                agree=False,
+                cost_usd=0.0,
+                latency_ms=0,
+                failure_modes=["pipeline_error"],
             )
-            record_dicts.append(records[-1].model_dump())
-            continue
+            return rec, rec.model_dump()
 
         agree = determination.decision == case.expected_decision
         modes = classify(
@@ -205,8 +215,24 @@ def run_eval(
             citation_recall=cit.recall,
             citation_f1=cit.f1,
         )
-        records.append(rec)
-        record_dicts.append(rec.model_dump())
+        return rec, rec.model_dump()
+
+    started = datetime.utcnow()
+    t0 = time.monotonic()
+    records: list[EvalRecord] = []
+    record_dicts: list[dict] = []
+
+    log.info("eval_run_starting", n=len(cases), case_workers=case_workers)
+    if case_workers > 1 and len(cases) > 1:
+        with ThreadPoolExecutor(max_workers=case_workers) as ex:
+            for rec, rec_dict in ex.map(evaluate, cases):
+                records.append(rec)
+                record_dicts.append(rec_dict)
+    else:
+        for case in cases:
+            rec, rec_dict = evaluate(case)
+            records.append(rec)
+            record_dicts.append(rec_dict)
 
     finished = datetime.utcnow()
     summary = summarise(record_dicts)

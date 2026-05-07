@@ -24,7 +24,7 @@ log = get_logger(__name__)
 PROMPT_PATH = Path(__file__).resolve().parents[1] / "prompts" / "criteria_checker.txt"
 VALID_STATUS: set[str] = {"met", "not_met", "partial", "insufficient_evidence"}
 
-DEFAULT_PARALLELISM = int(os.environ.get("EVAL_PARALLELISM", "8"))
+DEFAULT_PARALLELISM = int(os.environ.get("EVAL_PARALLELISM", "12"))
 
 
 def _evidence_block(patient: Patient) -> str:
