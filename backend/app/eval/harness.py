@@ -138,6 +138,19 @@ def run_eval(
     pf = policy_factory or _default_policy_factory
     cf = client_factory or (lambda: None)
 
+    # Memoize policies across cases. The default extractor calls Claude
+    # which is the single biggest cost; running it 10x for the same id is
+    # pure waste. Cache key is policy_id since cases referencing the same
+    # id should resolve to the same Policy object.
+    policy_cache: dict[str, Policy] = {}
+
+    def get_policy(case: GoldCase) -> Policy:
+        if case.policy_id in policy_cache:
+            return policy_cache[case.policy_id]
+        p = pf(case)
+        policy_cache[case.policy_id] = p
+        return p
+
     started = datetime.utcnow()
     t0 = time.monotonic()
     records: list[EvalRecord] = []
@@ -145,7 +158,7 @@ def run_eval(
 
     for case in cases:
         try:
-            policy = pf(case)
+            policy = get_policy(case)
             patient = parse_bundle_file((ROOT / case.patient_path).resolve())
             determination = run_determination(policy, patient, client=cf())
         except Exception as exc:
