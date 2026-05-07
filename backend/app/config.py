@@ -31,5 +31,10 @@ class Settings(BaseSettings):
     gcp_project_id: str = "rotune-493315"
     artifact_registry: str = "us-central1-docker.pkg.dev/rotune-493315"
 
+    # Comma-separated list of "key:actor" pairs. Empty disables auth for
+    # local dev. Example: API_KEYS=demo123:reviewer.alice,ops456:reviewer.bob
+    api_keys: str = ""
+    auth_required: bool = False
+
 
 settings = Settings()

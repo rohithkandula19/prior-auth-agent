@@ -50,7 +50,11 @@ def install_audit(app: FastAPI) -> None:
         if entity_type is None:
             return response
 
-        actor = request.headers.get("x-user") or "anonymous"
+        actor = (
+            getattr(request.state, "actor", None)
+            or request.headers.get("x-user")
+            or "anonymous"
+        )
         duration_ms = int((time.monotonic() - start) * 1000)
         try:
             with SessionLocal() as session:

@@ -12,6 +12,7 @@ from app.api import (
     routes_precheck,
 )
 from app.api.audit import install_audit
+from app.api.auth import install_auth
 from app.core.logging import configure_logging, get_logger
 from app.storage.db import init_db
 
@@ -41,8 +42,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Audit middleware: must be installed AFTER CORS so preflight is not logged.
+# Order matters: middlewares run last-in-first-out per FastAPI. We want
+# auth to set request.state.actor BEFORE audit reads it, so install audit
+# first (it runs second per LIFO), then auth.
 install_audit(app)
+install_auth(app)
 
 app.include_router(routes_policies.router)
 app.include_router(routes_patients.router)
