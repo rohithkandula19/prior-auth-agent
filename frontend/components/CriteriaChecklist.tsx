@@ -8,17 +8,13 @@ const STATUS_LABEL: Record<CriterionEvaluation["status"], string> = {
 };
 
 function shortTitle(text: string, maxWords = 8): string {
-  // First sentence or clause, truncated to a few words
   const cleaned = text.replace(/\s+/g, " ").trim();
   const firstSentence = cleaned.split(/(?<=[.;:])\s/)[0] ?? cleaned;
   const words = firstSentence.split(" ").slice(0, maxWords);
   return words.join(" ").replace(/[.,;:]+$/, "");
 }
 
-function detail(
-  ev: CriterionEvaluation,
-  patient: Patient
-): string {
+function detail(ev: CriterionEvaluation, patient: Patient): string {
   if (ev.reasoning) return ev.reasoning.replace(/\s+/g, " ").trim();
   const byId = new Map(patient.evidence.map((e) => [e.id, e]));
   const ids = ev.supporting_evidence
@@ -27,10 +23,10 @@ function detail(
   return ids.join(", ") || "Awaiting documentation";
 }
 
-function statusIcon(status: CriterionEvaluation["status"]) {
+function statusGlyph(status: CriterionEvaluation["status"]) {
   if (status === "met") {
     return (
-      <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-emerald-500 text-white">
+      <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-approved text-white">
         <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3 8l3 3 7-7" />
         </svg>
@@ -39,7 +35,7 @@ function statusIcon(status: CriterionEvaluation["status"]) {
   }
   if (status === "not_met") {
     return (
-      <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-red-500 text-white">
+      <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full bg-denied text-white">
         <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <path d="M4 4l8 8M12 4l-8 8" />
         </svg>
@@ -47,10 +43,10 @@ function statusIcon(status: CriterionEvaluation["status"]) {
     );
   }
   if (status === "partial") {
-    return <span className="mt-0.5 inline-flex h-5 w-5 flex-none rounded-full bg-amber-400" />;
+    return <span className="mt-0.5 inline-flex h-5 w-5 flex-none rounded-full bg-pending" />;
   }
   return (
-    <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full border border-slate-300 text-[10px] text-slate-500">
+    <span className="mt-0.5 inline-flex h-5 w-5 flex-none items-center justify-center rounded-full border border-rule text-[10px] text-soft">
       ?
     </span>
   );
@@ -67,20 +63,20 @@ export function CriteriaChecklist({
 }) {
   const byId = new Map(policy.criteria.map((c) => [c.id, c]));
   return (
-    <ul className="divide-y divide-line/70">
+    <ul className="divide-y divide-rule">
       {evaluations.map((ev) => {
         const crit = byId.get(ev.criterion_id);
         if (!crit) return null;
         return (
-          <li key={ev.criterion_id} className="flex gap-3 py-4">
-            {statusIcon(ev.status)}
+          <li key={ev.criterion_id} className="flex gap-4 py-5">
+            {statusGlyph(ev.status)}
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold tracking-tight">
+              <p className="text-[16px] font-medium tracking-tight text-ink">
                 {shortTitle(crit.text)}
               </p>
-              <p className="mt-1 text-sm text-slate-500">
-                <span className="text-slate-700">{STATUS_LABEL[ev.status]}</span>
-                <span className="mx-1.5 text-slate-300">·</span>
+              <p className="mt-1 text-sm text-soft">
+                <span className="text-body">{STATUS_LABEL[ev.status]}</span>
+                <span className="mx-2 text-rule">·</span>
                 {detail(ev, patient)}
               </p>
             </div>

@@ -10,12 +10,17 @@ export default async function DeterminePage() {
   ]);
 
   return (
-    <div className="space-y-10">
-      <header className="space-y-2">
+    <div className="space-y-12">
+      <header className="space-y-3">
         <p className="eyebrow">Run a determination</p>
-        <h1 className="text-4xl font-semibold tracking-tight">
-          Select a policy and a patient case
+        <h1 className="h-display text-[44px] tracking-tightest">
+          Select a policy and a patient case.
         </h1>
+        <p className="max-w-xl text-[15px] leading-relaxed text-body">
+          The agent streams progress as it checks each criterion. When it is
+          done, you land on the citation viewer with the decision, gaps, and
+          supporting evidence.
+        </p>
       </header>
       <DetermineForm policies={policies} patients={patients} />
     </div>

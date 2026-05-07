@@ -111,34 +111,44 @@ export function CitationCards({
     .at(-1);
 
   return (
-    <div className="grid gap-5 md:grid-cols-2">
-      <article className="rounded-xl border border-line/70 bg-white p-6">
-        <p className="eyebrow mb-3">Policy text</p>
-        <p className="text-[15px] leading-relaxed text-slate-800">
+    <div className="grid gap-6 md:grid-cols-2">
+      <article className="surface px-7 py-6">
+        <p className="eyebrow mb-4">Policy text</p>
+        <p className="text-[15px] leading-relaxed text-body">
           <HighlightedExcerpt
             text={policyExcerpt.text || policy.raw_text.slice(0, CONTEXT_CHARS)}
             spans={policyExcerpt.spans}
             tone="policy"
           />
         </p>
-        <p className="mt-4 text-xs text-slate-500">
-          {policy.payer} {policy.procedure_code}
-          {policyPage ? ` · Page ${policyPage}` : null}
+        <p className="mt-5 text-xs text-soft">
+          {policy.payer} <span className="text-rule">·</span> CPT {policy.procedure_code}
+          {policyPage ? (
+            <>
+              <span className="text-rule"> · </span>
+              Page {policyPage}
+            </>
+          ) : null}
         </p>
       </article>
 
-      <article className="rounded-xl border border-line/70 bg-white p-6">
-        <p className="eyebrow mb-3">Chart text</p>
-        <p className="text-[15px] leading-relaxed text-slate-800">
+      <article className="surface px-7 py-6">
+        <p className="eyebrow mb-4">Chart text</p>
+        <p className="text-[15px] leading-relaxed text-body">
           <HighlightedExcerpt
             text={chartExcerpt.text || patient.raw_chart.slice(0, CONTEXT_CHARS)}
             spans={chartExcerpt.spans}
             tone="chart"
           />
         </p>
-        <p className="mt-4 text-xs text-slate-500">
+        <p className="mt-5 text-xs text-soft">
           Patient {patient.id}
-          {visitDate ? ` · Visit ${visitDate}` : null}
+          {visitDate ? (
+            <>
+              <span className="text-rule"> · </span>
+              Visit {visitDate}
+            </>
+          ) : null}
         </p>
       </article>
     </div>

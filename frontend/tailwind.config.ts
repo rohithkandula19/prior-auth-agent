@@ -5,16 +5,45 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        approved: "#10b981",
-        denied: "#ef4444",
-        pending: "#f59e0b",
-        ink: "#0f172a",
-        paper: "#f8fafc",
-        line: "#e2e8f0",
+        ink: "#111111",
+        body: "#3f3f3f",
+        soft: "#6b6b6b",
+        rule: "#e8e6df",
+        line: "#e8e6df",
+        paper: "#f6f4ee",
+        canvas: "#fbfaf6",
+        approved: "#1f7a4d",
+        denied: "#b3261e",
+        pending: "#a86b00",
+        wash: {
+          policy: "#fce8b1",
+          chart: "#bfe9c8",
+        },
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+        sans: [
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "'SF Pro Text'",
+          "Inter",
+          "sans-serif",
+        ],
+        display: [
+          "ui-serif",
+          "'New York'",
+          "'Iowan Old Style'",
+          "Georgia",
+          "serif",
+        ],
+        mono: ["ui-monospace", "'SF Mono'", "'JetBrains Mono'", "monospace"],
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
+      },
+      boxShadow: {
+        card: "0 1px 0 rgba(17,17,17,0.04)",
       },
     },
   },

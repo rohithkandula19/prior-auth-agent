@@ -13,9 +13,9 @@ const DECISION_LABEL: Record<DecisionType, string> = {
 };
 
 const DECISION_BADGE: Record<DecisionType, string> = {
-  approved: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-  denied: "bg-red-50 text-red-700 ring-red-100",
-  needs_more_info: "bg-amber-50 text-amber-700 ring-amber-100",
+  approved: "bg-emerald-50/70 text-approved ring-emerald-100",
+  denied: "bg-red-50/70 text-denied ring-red-100",
+  needs_more_info: "bg-amber-50/70 text-pending ring-amber-100",
 };
 
 const DECISION_ICON: Record<DecisionType, React.ReactNode> = {
@@ -35,6 +35,11 @@ const DECISION_ICON: Record<DecisionType, React.ReactNode> = {
     </svg>
   ),
 };
+
+function formatLatency(ms: number): string {
+  if (ms >= 1000) return `${(ms / 1000).toFixed(1)}s`;
+  return `${ms} ms`;
+}
 
 export default async function ResultsPage({
   params,
@@ -57,22 +62,24 @@ export default async function ResultsPage({
   const detIdShort = determination.id.toUpperCase().replace(/^DET_?/, "DET-");
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       <header className="space-y-3">
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-3 text-xs text-soft">
           <span className="eyebrow">{detIdShort}</span>
-          <span className="text-slate-300">·</span>
-          <span className="text-slate-500">{determination.latency_ms} ms</span>
-          <span className="text-slate-300">·</span>
-          <span className="text-slate-500">${determination.cost_usd.toFixed(4)}</span>
+          <span className="text-rule">·</span>
+          <span>{formatLatency(determination.latency_ms)}</span>
+          <span className="text-rule">·</span>
+          <span>${determination.cost_usd.toFixed(4)}</span>
         </div>
-        <h1 className="text-[34px] font-semibold tracking-tight">
-          {policy.procedure_name} <span className="text-slate-400">·</span> {patient.id}
+        <h1 className="h-display text-[40px] tracking-tightest">
+          {policy.procedure_name}{" "}
+          <span className="text-rule">·</span>{" "}
+          <span className="text-soft">{patient.id}</span>
         </h1>
       </header>
 
-      <section className="rounded-xl border border-line/70 bg-white p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
+      <section className="surface px-8 py-7">
+        <div className="flex flex-wrap items-baseline justify-between gap-6">
           <div className="flex items-center gap-4">
             <span
               className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium ring-1 ring-inset ${DECISION_BADGE[decision]}`}
@@ -80,23 +87,22 @@ export default async function ResultsPage({
               {DECISION_ICON[decision]}
               {DECISION_LABEL[decision]}
             </span>
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-body">
               {counts.met} of {counts.total} criteria met
             </span>
           </div>
           <div className="text-right">
             <p className="eyebrow">Confidence</p>
-            <p className="text-3xl font-semibold tracking-tight">
+            <p className="h-display text-[34px]">
               {determination.confidence.toFixed(2)}
             </p>
           </div>
         </div>
+        <p className="mt-5 text-sm text-body">{determination.recommended_action}</p>
         {determination.gaps.length > 0 ? (
-          <div className="mt-5 rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wider">
-              Documentation gaps
-            </p>
-            <ul className="list-inside list-disc space-y-0.5">
+          <div className="mt-5 rounded-md bg-amber-50/70 px-4 py-3 text-sm text-pending">
+            <p className="eyebrow mb-1 text-pending">Documentation gaps</p>
+            <ul className="list-inside list-disc space-y-1 text-amber-900">
               {determination.gaps.map((g, i) => (
                 <li key={i}>{g}</li>
               ))}
@@ -111,8 +117,8 @@ export default async function ResultsPage({
         evaluations={determination.criterion_evaluations}
       />
 
-      <section className="rounded-xl border border-line/70 bg-white p-6">
-        <p className="eyebrow mb-2">Criteria</p>
+      <section className="surface px-8 py-7">
+        <p className="eyebrow mb-4">Criteria</p>
         <CriteriaChecklist
           policy={policy}
           patient={patient}

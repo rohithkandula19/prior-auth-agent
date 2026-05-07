@@ -10,40 +10,70 @@ html,
 body {
   background: theme("colors.paper");
   color: theme("colors.ink");
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Editorial typography defaults */
-h1 {
-  letter-spacing: -0.025em;
-}
-h2,
-h3 {
-  letter-spacing: -0.015em;
-}
-
-/* Citation highlights matching the mockups: warm yellow for policy, mint
-   green for chart. Pad a hair so the highlight reads as a lozenge. */
-.cite-policy {
-  background: #fde9b8;
-  padding: 1px 4px;
-  margin: 0 1px;
-  border-radius: 4px;
-}
-.cite-chart {
-  background: #c8efd2;
-  padding: 1px 4px;
-  margin: 0 1px;
-  border-radius: 4px;
-}
-.cite-active {
-  outline: 2px solid #1f2937;
-  outline-offset: 1px;
+/* Editorial display heading */
+.h-display {
+  font-family: theme("fontFamily.display");
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 
 .eyebrow {
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: #8a8472;
   font-weight: 500;
+}
+
+.surface {
+  background: theme("colors.canvas");
+  border-radius: 14px;
+  box-shadow: theme("boxShadow.card");
+}
+
+.rule {
+  border-color: theme("colors.rule");
+}
+
+/* Citation marks */
+.cite-policy {
+  background: theme("colors.wash.policy");
+  padding: 1px 5px;
+  margin: 0 1px;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.cite-chart {
+  background: theme("colors.wash.chart");
+  padding: 1px 5px;
+  margin: 0 1px;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Native select styling so dropdowns don't feel raw */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%238a8472' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+  padding-right: 32px;
+}
+
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 2px;
 }
