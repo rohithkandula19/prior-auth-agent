@@ -21,6 +21,7 @@ from app.storage.db import (
     DeterminationRow,
     PatientRow,
     PolicyRow,
+    PolicyVersionRow,
     SessionLocal,
     healthcheck,
 )
@@ -55,12 +56,22 @@ class _MemoryRepo(Generic[T]):
 
 class _PolicyRepo:
     def put(self, key: str, value: Policy) -> Policy:
+        payload = value.model_dump(mode="json")
         with SessionLocal() as session:  # type: Session
             row = session.get(PolicyRow, key)
             if row:
-                row.data = value.model_dump(mode="json")
+                row.data = payload
             else:
-                session.add(PolicyRow(id=key, data=value.model_dump(mode="json")))
+                session.add(PolicyRow(id=key, data=payload))
+            # Append a version row each time put() is called.
+            last = (
+                session.query(PolicyVersionRow)
+                .filter(PolicyVersionRow.policy_id == key)
+                .order_by(PolicyVersionRow.version.desc())
+                .first()
+            )
+            next_v = (last.version + 1) if last else 1
+            session.add(PolicyVersionRow(policy_id=key, version=next_v, data=payload))
             session.commit()
         return value
 

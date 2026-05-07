@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 import { AppealPanel } from "@/components/AppealPanel";
 import { CitationCards } from "@/components/CitationCards";
+import { CounterfactualPanel } from "@/components/CounterfactualPanel";
 import { CriteriaChecklist, metCount } from "@/components/CriteriaChecklist";
 import type { DecisionType } from "@/lib/types";
 
@@ -65,12 +66,22 @@ export default async function ResultsPage({
   return (
     <div className="space-y-12">
       <header className="space-y-3">
-        <div className="flex items-center gap-3 text-xs text-soft">
-          <span className="eyebrow">{detIdShort}</span>
-          <span className="text-rule">·</span>
-          <span>{formatLatency(determination.latency_ms)}</span>
-          <span className="text-rule">·</span>
-          <span>${determination.cost_usd.toFixed(4)}</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-xs text-soft">
+            <span className="eyebrow">{detIdShort}</span>
+            <span className="text-rule">·</span>
+            <span>{formatLatency(determination.latency_ms)}</span>
+            <span className="text-rule">·</span>
+            <span>${determination.cost_usd.toFixed(4)}</span>
+          </div>
+          <a
+            href={`${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"}/determinations/${determination.id}/pdf`}
+            className="rounded-md border border-rule bg-canvas px-3 py-1.5 text-xs hover:border-ink/40"
+            target="_blank"
+            rel="noopener"
+          >
+            Download PDF
+          </a>
         </div>
         <h1 className="h-display text-[40px] tracking-tightest">
           {policy.procedure_name}{" "}
@@ -127,6 +138,7 @@ export default async function ResultsPage({
         />
       </section>
 
+      {decision !== "approved" ? <CounterfactualPanel determinationId={determination.id} /> : null}
       {decision !== "approved" ? <AppealPanel determinationId={determination.id} /> : null}
     </div>
   );

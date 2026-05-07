@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import type { EvalSummary } from "@/lib/types";
 import { CalibrationCurve } from "@/components/CalibrationCurve";
+import { ModelCompare } from "@/components/ModelCompare";
 
 const FAILURE_LABEL: Record<string, string> = {
   hallucinated_criterion: "Hallucinated criterion",
@@ -161,6 +162,8 @@ export function EvalDashboard({ initial }: { initial: EvalSummary }) {
           )}
         </section>
       </div>
+
+      <ModelCompare />
 
       <section className="space-y-5">
         <p className="eyebrow">Failure modes</p>

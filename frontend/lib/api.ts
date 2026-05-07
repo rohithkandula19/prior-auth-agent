@@ -149,10 +149,48 @@ export const api = {
       { method: "POST", body: JSON.stringify({}) }
     ),
 
+  counterfactuals: (determination_id: string) =>
+    request<
+      {
+        target_criterion_id: string;
+        add_to_chart: string;
+        expected_status_after: string;
+        predicted_decision_after: string;
+        rationale: string;
+      }[]
+    >(`/determinations/${determination_id}/counterfactuals`, {
+      method: "POST",
+      body: JSON.stringify({}),
+    }),
+
   metrics: () => request<EvalSummary>("/eval/metrics"),
   runEval: (limit?: number) =>
     request<{ run_id: string; n: number; agreement: number; summary: EvalSummary }>(
       "/eval/run",
       { method: "POST", body: JSON.stringify({ limit }) }
     ),
+  compareModels: (models: string[], limit?: number) =>
+    request<{
+      baseline: string;
+      models: string[];
+      by_model: Record<
+        string,
+        {
+          n: number;
+          agreement: number;
+          ece: number | null;
+          latency_ms: { p50: number; p95: number; p99: number } | null;
+          avg_cost_usd: number | null;
+        }
+      >;
+      deltas: Record<
+        string,
+        {
+          agreement_diff: number | null;
+          ece_diff: number | null;
+          p95_latency_diff_ms: number | null;
+          cost_diff_usd: number | null;
+        }
+      >;
+    }>("/eval/compare", { method: "POST", body: JSON.stringify({ models, limit }) }),
 };

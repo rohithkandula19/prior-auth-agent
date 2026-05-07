@@ -14,6 +14,7 @@ from app.ingestion.criteria_extractor import CriteriaExtractor
 from app.ingestion.policy_indexer import build_policy
 from app.ingestion.policy_parser import parse_pdf, parse_text
 from app.schemas.policy import Criterion, Policy
+from app.storage.db import PolicyVersionRow, SessionLocal
 from app.storage.repo import policy_repo
 
 router = APIRouter(prefix="/policies", tags=["policies"])
@@ -110,3 +111,55 @@ async def get_criteria(policy_id: str) -> list[Criterion]:
     if not p:
         raise HTTPException(404, "policy not found")
     return p.criteria
+
+
+@router.get("/{policy_id}/versions")
+async def list_versions(policy_id: str) -> list[dict]:
+    with SessionLocal() as session:
+        rows = (
+            session.query(PolicyVersionRow)
+            .filter(PolicyVersionRow.policy_id == policy_id)
+            .order_by(PolicyVersionRow.version.desc())
+            .all()
+        )
+        return [
+            {
+                "version": r.version,
+                "created_at": r.created_at.isoformat(),
+                "criterion_count": len(r.data.get("criteria", [])),
+                "effective_date": r.data.get("effective_date"),
+            }
+            for r in rows
+        ]
+
+
+@router.get("/{policy_id}/diff")
+async def diff_versions(policy_id: str, a: int, b: int) -> dict:
+    with SessionLocal() as session:
+        rows = {
+            r.version: r
+            for r in session.query(PolicyVersionRow)
+            .filter(PolicyVersionRow.policy_id == policy_id)
+            .filter(PolicyVersionRow.version.in_([a, b]))
+            .all()
+        }
+    if a not in rows or b not in rows:
+        raise HTTPException(404, "version not found")
+    crit_a = {c["id"]: c["text"] for c in rows[a].data.get("criteria", [])}
+    crit_b = {c["id"]: c["text"] for c in rows[b].data.get("criteria", [])}
+    added = sorted(set(crit_b.keys()) - set(crit_a.keys()))
+    removed = sorted(set(crit_a.keys()) - set(crit_b.keys()))
+    changed = [
+        cid for cid in (crit_a.keys() & crit_b.keys()) if crit_a[cid] != crit_b[cid]
+    ]
+    return {
+        "policy_id": policy_id,
+        "a": a,
+        "b": b,
+        "added": added,
+        "removed": removed,
+        "changed": sorted(changed),
+        "added_text": {cid: crit_b[cid] for cid in added},
+        "removed_text": {cid: crit_a[cid] for cid in removed},
+        "changed_text": {cid: {"a": crit_a[cid], "b": crit_b[cid]} for cid in changed},
+    }

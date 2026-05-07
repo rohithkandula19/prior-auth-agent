@@ -4,9 +4,23 @@ AI agent that reads payer medical policies and patient charts, then produces
 citation-grounded prior authorization decisions with calibrated confidence
 scores and a full eval harness.
 
-The hero output: a determination page that shows the policy on the left and
-the chart on the right, with every cited span highlighted and clickable, so
-a reviewer can audit the model's reasoning in seconds rather than minutes.
+The hero output: a determination page that shows the policy and chart with
+every cited span highlighted, plus a "what would flip this?" counterfactual
+panel and a one-click appeal letter generator. A reviewer can audit, act,
+or appeal in seconds rather than minutes.
+
+## Surfaces
+
+- **Pre-check** (provider-side wedge): paste a draft note, get the list of
+  things to add before submitting.
+- **Determine**: full agent run with live progress streaming.
+- **Results**: split-pane citation viewer, criteria checklist, appeal letter
+  drafting, counterfactual analysis, PDF export.
+- **Queue** (payer-side wedge): all determinations triaged into auto-clear /
+  reviewer / escalate lanes by confidence.
+- **Eval**: gold-set agreement, calibration curve, citation precision/recall,
+  failure-mode taxonomy, A/B model comparison.
+- **Audit**: append-only log of every PHI-touching request.
 
 ## Stack
 

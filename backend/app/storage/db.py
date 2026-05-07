@@ -49,6 +49,17 @@ class PolicyRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
+class PolicyVersionRow(Base):
+    """Append-only history of policy ingests so we can diff across time."""
+
+    __tablename__ = "policy_versions"
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    policy_id: Mapped[str] = mapped_column(String, index=True, nullable=False)
+    version: Mapped[int] = mapped_column(default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
+
+
 class PatientRow(Base):
     __tablename__ = "patients"
     id: Mapped[str] = mapped_column(String, primary_key=True)

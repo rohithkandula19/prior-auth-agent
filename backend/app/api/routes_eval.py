@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from app.eval.compare import run_compare
 from app.eval.harness import EvalRun, run_eval
 from app.eval.metrics import latest_summary
 
@@ -30,3 +31,13 @@ async def get_metrics() -> dict:
 async def get_failure_modes() -> dict:
     summary = latest_summary()
     return {"failure_modes": summary.get("failure_modes", {})}
+
+
+class CompareRequest(BaseModel):
+    models: list[str]
+    limit: int | None = None
+
+
+@router.post("/compare")
+async def post_compare(req: CompareRequest) -> dict:
+    return run_compare(req.models, limit=req.limit)

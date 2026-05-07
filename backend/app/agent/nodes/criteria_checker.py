@@ -13,6 +13,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from app.agent.retrieval import select_relevant
 from app.agent.state import AgentState
 from app.core.llm import ClaudeClient, get_client
 from app.core.logging import get_logger
@@ -38,11 +39,17 @@ def _evaluate_one(
     crit: Criterion,
     client: ClaudeClient,
     template: str,
-    ev_block: str,
-    valid_ev_ids: set[str],
     patient: Patient,
+    valid_ev_ids: set[str],
 ) -> tuple[CriterionEvaluation | None, float, int, float]:
     """Returns (evaluation_or_none, cost_usd, latency_ms, confidence)."""
+    # Per-criterion retrieval: when evidence is large, only feed the
+    # top-k most relevant items into the prompt for this specific criterion.
+    relevant = select_relevant(crit.text, patient.evidence)
+    ev_block = "\n".join(
+        f"- {e.id} | {e.type} | {e.description} | date={e.date.isoformat()}"
+        for e in relevant
+    )
     prompt = template.format(
         criterion_text=crit.text,
         criterion_type=crit.type,
@@ -91,7 +98,6 @@ def make_node(client: ClaudeClient | None = None, *, parallelism: int | None = N
     def run(state: AgentState) -> AgentState:
         policy = state["policy"]
         patient = state["patient"]
-        ev_block = _evidence_block(patient)
         valid_ev_ids = {e.id for e in patient.evidence}
 
         # Preserve criterion order in the output; the executor map respects it.
@@ -100,15 +106,13 @@ def make_node(client: ClaudeClient | None = None, *, parallelism: int | None = N
             with ThreadPoolExecutor(max_workers=workers) as ex:
                 results = list(
                     ex.map(
-                        lambda c: _evaluate_one(
-                            c, client, template, ev_block, valid_ev_ids, patient
-                        ),
+                        lambda c: _evaluate_one(c, client, template, patient, valid_ev_ids),
                         policy.criteria,
                     )
                 )
         else:
             results = [
-                _evaluate_one(c, client, template, ev_block, valid_ev_ids, patient)
+                _evaluate_one(c, client, template, patient, valid_ev_ids)
                 for c in policy.criteria
             ]
 
